@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -76,9 +76,9 @@ export default function ProductsPage() {
   useEffect(() => {
     fetchCategories();
     fetchProducts();
-  }, [searchQuery, selectedCategory, activeFilter, sortBy]);
+  }, [fetchCategories, fetchProducts]);
 
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       const token = localStorage.getItem("admin_token");
       const response = await fetch("/api/admin/categories", {
@@ -92,9 +92,9 @@ export default function ProductsPage() {
     } catch (error) {
       console.error("Failed to fetch categories:", error);
     }
-  };
+  }, []);
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       const token = localStorage.getItem("admin_token");
       if (!token) {
@@ -126,7 +126,7 @@ export default function ProductsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchQuery, selectedCategory, activeFilter, sortBy, router]);
 
   const handleDelete = async (productId: string) => {
     if (!confirm("Are you sure you want to delete this product?")) return;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -58,9 +58,9 @@ export default function EditCouponPage() {
 
   useEffect(() => {
     fetchCoupon();
-  }, [couponId]);
+  }, [fetchCoupon]);
 
-  const fetchCoupon = async () => {
+  const fetchCoupon = useCallback(async () => {
     try {
       const token = localStorage.getItem("admin_token");
       if (!token) {
@@ -106,7 +106,7 @@ export default function EditCouponPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [couponId, router]);
 
   const handleInputChange = (field: string, value: any) => {
     setFormData((prev) => ({

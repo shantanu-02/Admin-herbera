@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -101,9 +101,9 @@ export default function ProductDetailPage() {
   useEffect(() => {
     fetchProduct();
     fetchReviews();
-  }, [productId]);
+  }, [fetchProduct, fetchReviews]);
 
-  const fetchProduct = async () => {
+  const fetchProduct = useCallback(async () => {
     try {
       const token = localStorage.getItem("admin_token");
       if (!token) {
@@ -128,9 +128,9 @@ export default function ProductDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [productId, router]);
 
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     try {
       const token = localStorage.getItem("admin_token");
       const response = await fetch(`/api/admin/products/${productId}/reviews`, {
@@ -144,7 +144,7 @@ export default function ProductDetailPage() {
     } catch (error) {
       console.error("Failed to fetch reviews:", error);
     }
-  };
+  }, [productId]);
 
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this product?")) return;
@@ -227,7 +227,7 @@ export default function ProductDetailPage() {
             Product not found
           </h3>
           <p className="text-gray-600 mb-6">
-            The product you're looking for doesn't exist.
+            The product you&apos;re looking for doesn&apos;t exist.
           </p>
           <Button onClick={() => router.push("/products")}>
             Back to Products
@@ -328,8 +328,8 @@ export default function ProductDetailPage() {
                   <div className="flex items-center space-x-1">
                     {renderStars(Math.floor(product.rating))}
                     <span className="text-sm font-medium text-gray-700 ml-2">
-                      {product.rating?.toFixed(1)} ({product.reviews.total_count}{" "}
-                      reviews)
+                      {product.rating?.toFixed(1)} (
+                      {product.reviews.total_count} reviews)
                     </span>
                   </div>
                   <div className="text-sm text-gray-600">

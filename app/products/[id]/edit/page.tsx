@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -76,9 +76,9 @@ export default function EditProductPage() {
   useEffect(() => {
     fetchProduct();
     fetchCategories();
-  }, [productId]);
+  }, [fetchProduct, fetchCategories]);
 
-  const fetchProduct = async () => {
+  const fetchProduct = useCallback(async () => {
     try {
       const token = localStorage.getItem("admin_token");
       if (!token) {
@@ -133,9 +133,9 @@ export default function EditProductPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [productId, router]);
 
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       const token = localStorage.getItem("admin_token");
       if (!token) return;
@@ -153,7 +153,7 @@ export default function EditProductPage() {
     } catch (error) {
       console.error("Error fetching categories:", error);
     }
-  };
+  }, []);
 
   const handleInputChange = (field: string, value: any) => {
     setFormData((prev) => ({

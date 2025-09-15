@@ -1,16 +1,29 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Pencil, Trash2, Plus, Search, ArrowLeft } from 'lucide-react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useCallback } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Pencil, Trash2, Plus, Search, ArrowLeft } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface Category {
   id: string;
@@ -25,76 +38,76 @@ interface Category {
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [formData, setFormData] = useState({ name: '', description: '' });
+  const [formData, setFormData] = useState({ name: "", description: "" });
   const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     fetchCategories();
-  }, [searchQuery]);
+  }, [fetchCategories]);
 
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = localStorage.getItem("admin_token");
       if (!token) {
-        router.push('/');
+        router.push("/");
         return;
       }
 
-      const url = new URL('/api/admin/categories', window.location.origin);
+      const url = new URL("/api/admin/categories", window.location.origin);
       if (searchQuery) {
-        url.searchParams.append('q', searchQuery);
+        url.searchParams.append("q", searchQuery);
       }
 
       const response = await fetch(url.toString(), {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (response.ok) {
         const data = await response.json();
         setCategories(data.data);
       } else {
-        toast.error('Failed to fetch categories');
+        toast.error("Failed to fetch categories");
       }
     } catch (error) {
-      toast.error('Failed to fetch categories');
+      toast.error("Failed to fetch categories");
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchQuery, router]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
 
     try {
-      const token = localStorage.getItem('admin_token');
-      const response = await fetch('/api/admin/categories', {
-        method: 'POST',
+      const token = localStorage.getItem("admin_token");
+      const response = await fetch("/api/admin/categories", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
       if (response.ok) {
-        toast.success('Category created successfully');
+        toast.success("Category created successfully");
         setShowCreateDialog(false);
-        setFormData({ name: '', description: '' });
+        setFormData({ name: "", description: "" });
         fetchCategories();
       } else {
         const data = await response.json();
-        toast.error(data.error?.message || 'Failed to create category');
+        toast.error(data.error?.message || "Failed to create category");
       }
     } catch (error) {
-      toast.error('Failed to create category');
+      toast.error("Failed to create category");
     } finally {
       setSubmitting(false);
     }
@@ -103,58 +116,61 @@ export default function CategoriesPage() {
   const handleEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingCategory) return;
-    
+
     setSubmitting(true);
 
     try {
-      const token = localStorage.getItem('admin_token');
-      const response = await fetch(`/api/admin/categories/${editingCategory.id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(formData)
-      });
+      const token = localStorage.getItem("admin_token");
+      const response = await fetch(
+        `/api/admin/categories/${editingCategory.id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
       if (response.ok) {
-        toast.success('Category updated successfully');
+        toast.success("Category updated successfully");
         setShowEditDialog(false);
         setEditingCategory(null);
-        setFormData({ name: '', description: '' });
+        setFormData({ name: "", description: "" });
         fetchCategories();
       } else {
         const data = await response.json();
-        toast.error(data.error?.message || 'Failed to update category');
+        toast.error(data.error?.message || "Failed to update category");
       }
     } catch (error) {
-      toast.error('Failed to update category');
+      toast.error("Failed to update category");
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleDelete = async (categoryId: string) => {
-    if (!confirm('Are you sure you want to delete this category?')) return;
+    if (!confirm("Are you sure you want to delete this category?")) return;
 
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = localStorage.getItem("admin_token");
       const response = await fetch(`/api/admin/categories/${categoryId}`, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (response.ok) {
-        toast.success('Category deleted successfully');
+        toast.success("Category deleted successfully");
         fetchCategories();
       } else {
         const data = await response.json();
-        toast.error(data.error?.message || 'Failed to delete category');
+        toast.error(data.error?.message || "Failed to delete category");
       }
     } catch (error) {
-      toast.error('Failed to delete category');
+      toast.error("Failed to delete category");
     }
   };
 
@@ -183,7 +199,7 @@ export default function CategoriesPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <Button
-                onClick={() => router.push('/')}
+                onClick={() => router.push("/")}
                 variant="ghost"
                 size="sm"
                 className="mr-4 text-gray-600 hover:text-gray-900"
@@ -193,10 +209,12 @@ export default function CategoriesPage() {
               </Button>
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">Categories</h1>
-                <p className="text-gray-600 mt-1">Manage your product categories</p>
+                <p className="text-gray-600 mt-1">
+                  Manage your product categories
+                </p>
               </div>
             </div>
-            <Button 
+            <Button
               onClick={() => setShowCreateDialog(true)}
               className="bg-emerald-600 hover:bg-emerald-700 shadow-md"
             >
@@ -225,7 +243,10 @@ export default function CategoriesPage() {
         {/* Categories Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {categories.map((category) => (
-            <Card key={category.id} className="border-0 shadow-lg hover:shadow-xl transition-all duration-200">
+            <Card
+              key={category.id}
+              className="border-0 shadow-lg hover:shadow-xl transition-all duration-200"
+            >
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -274,12 +295,16 @@ export default function CategoriesPage() {
               <div className="bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                 <Plus className="w-8 h-8 text-gray-400" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No categories found</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No categories found
+              </h3>
               <p className="text-gray-600 mb-6">
-                {searchQuery ? 'No categories match your search.' : 'Get started by creating your first category.'}
+                {searchQuery
+                  ? "No categories match your search."
+                  : "Get started by creating your first category."}
               </p>
               {!searchQuery && (
-                <Button 
+                <Button
                   onClick={() => setShowCreateDialog(true)}
                   className="bg-emerald-600 hover:bg-emerald-700"
                 >
@@ -308,7 +333,9 @@ export default function CategoriesPage() {
                 <Input
                   id="name"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
                   placeholder="e.g., Skincare, Haircare"
                   required
                   className="h-10"
@@ -319,27 +346,29 @@ export default function CategoriesPage() {
                 <Textarea
                   id="description"
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
                   placeholder="Brief description of the category..."
                   rows={3}
                 />
               </div>
             </div>
             <DialogFooter>
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => setShowCreateDialog(false)}
                 disabled={submitting}
               >
                 Cancel
               </Button>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={submitting}
                 className="bg-emerald-600 hover:bg-emerald-700"
               >
-                {submitting ? 'Creating...' : 'Create Category'}
+                {submitting ? "Creating..." : "Create Category"}
               </Button>
             </DialogFooter>
           </form>
@@ -362,7 +391,9 @@ export default function CategoriesPage() {
                 <Input
                   id="edit-name"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
                   placeholder="e.g., Skincare, Haircare"
                   required
                   className="h-10"
@@ -373,27 +404,29 @@ export default function CategoriesPage() {
                 <Textarea
                   id="edit-description"
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
                   placeholder="Brief description of the category..."
                   rows={3}
                 />
               </div>
             </div>
             <DialogFooter>
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => setShowEditDialog(false)}
                 disabled={submitting}
               >
                 Cancel
               </Button>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={submitting}
                 className="bg-emerald-600 hover:bg-emerald-700"
               >
-                {submitting ? 'Updating...' : 'Update Category'}
+                {submitting ? "Updating..." : "Update Category"}
               </Button>
             </DialogFooter>
           </form>

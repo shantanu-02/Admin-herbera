@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -56,9 +56,9 @@ export default function NewProductPage() {
 
   useEffect(() => {
     fetchCategories();
-  }, []);
+  }, [fetchCategories]);
 
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       const token = localStorage.getItem("admin_token");
       if (!token) {
@@ -81,7 +81,7 @@ export default function NewProductPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [router]);
 
   const handleInputChange = (field: string, value: any) => {
     setFormData((prev) => ({

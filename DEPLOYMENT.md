@@ -1,364 +1,192 @@
-# Herbera Admin Panel - Production Deployment Guide
+# 🚀 Production Deployment Guide
 
-This guide will help you deploy the Herbera admin panel to production at `admin.herbera.in` using your existing Supabase database schema.
+This guide will help you deploy the Herbera Admin application to production.
 
-## 🚀 Quick Setup Steps
+## 📋 Prerequisites
 
-### 1. Install Dependencies
+- [Vercel](https://vercel.com) account (recommended)
+- [Netlify](https://netlify.com) account (alternative)
+- Supabase project with all tables created
+- Domain name (admin.herbera.in)
+
+## 🔧 Environment Variables
+
+### For Vercel/Netlify Deployment:
+
+1. **Copy your current `.env` file content**
+2. **Update the production URL** in your deployment platform
+
+### Required Environment Variables:
 
 ```bash
-npm install
-```
-
-### 2. Environment Configuration
-
-Create a `.env.local` file in your project root:
-
-```env
 # Supabase Configuration
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+NEXT_PUBLIC_SUPABASE_URL=https://zhzzgujukusldiyqbrii.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpoenpndWp1a3VzbGRpeXFicmlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcyNDU1NDMsImV4cCI6MjA3MjgyMTU0M30.T4w3ERypqtP1ExaymRtMu4-kaX_exwaPjcGxJ6ZFmqo
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpoenpndWp1a3VzbGRpeXFicmlpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NzI0NTU0MywiZXhwIjoyMDcyODIxNTQzfQ.RvNeFPqGA9KvQhZRYd6c1CbpmnvK96jBUOksw4KxF8A
 
 # App Configuration
 NEXT_PUBLIC_APP_URL=https://admin.herbera.in
 NODE_ENV=production
 
-# JWT Secret (Generate a strong random string)
-JWT_SECRET=your_strong_random_jwt_secret_here_at_least_32_chars
+# JWT Secret (CHANGE THIS IN PRODUCTION!)
+JWT_SECRET=your-super-secure-jwt-secret-here
 
 # Admin Configuration
 ADMIN_EMAIL=shantanupawar101@gmail.com
 ```
 
-**Important:**
+## 🚀 Vercel Deployment (Recommended)
 
-- Replace `your_supabase_project_url` with your actual Supabase project URL
-- Replace `your_supabase_anon_key` with your Supabase anon public key
-- Replace `your_supabase_service_role_key` with your Supabase service role key (keep this secret!)
-- Generate a strong JWT secret (at least 32 characters, random)
-
-### 3. Database Setup
-
-Since you already have existing tables, you can skip the database creation. However, you may need to ensure you have all required tables.
-
-#### Step 3.1: Check/Update Database Schema (Optional)
-
-If you want to ensure you have all the latest tables and functions:
-
-1. Go to your Supabase project dashboard
-2. Navigate to the SQL Editor
-3. Review the contents of `database/setup.sql`
-4. Run only the parts you need (new tables, indexes, policies, etc.)
-
-#### Step 3.2: Create Admin User
-
-You have 3 options to create an admin user:
-
-**Option A: Using the Node.js Script (Recommended)**
+### Step 1: Prepare Repository
 
 ```bash
-npm install
-node scripts/create-admin-user.js
+# Make sure all changes are committed
+git add .
+git commit -m "Production ready"
+git push origin main
 ```
 
-**Option B: Via Supabase Dashboard**
+### Step 2: Deploy to Vercel
 
-1. Go to Authentication > Users in your Supabase dashboard
-2. Click "Add user"
-3. Create user with email: `shantanupawar101@gmail.com`
-4. Set password as: `Shantanu@123`
-5. After user is created, run this SQL in your SQL Editor:
+1. Go to [Vercel Dashboard](https://vercel.com/dashboard)
+2. Click "New Project"
+3. Import your GitHub repository
+4. Configure environment variables (see above)
+5. Deploy!
 
-```sql
-UPDATE profiles
-SET role = 'admin', full_name = 'Shantanu Pawar'
-WHERE email = 'shantanupawar101@gmail.com';
-```
+### Step 3: Configure Domain
 
-**Option C: Manual SQL (Advanced)**
-If your profiles table doesn't exist, first create it, then:
+1. In Vercel dashboard, go to your project
+2. Go to "Settings" → "Domains"
+3. Add `admin.herbera.in` as custom domain
+4. Configure DNS records as instructed
 
-```sql
--- First create the user in auth.users (this might require service role)
--- Then update the profile
-UPDATE profiles
-SET role = 'admin'
-WHERE email = 'shantanupawar101@gmail.com';
-```
+## 🌐 Netlify Deployment (Alternative)
 
-### 4. Deploy to Production
+### Step 1: Build Settings
 
-#### Option A: Deploy to Vercel (Recommended)
+- **Build Command**: `npm run build`
+- **Publish Directory**: `.next`
+- **Node Version**: 18.x
 
-1. **Connect GitHub Repository:**
+### Step 2: Environment Variables
 
-   - Push your code to GitHub
-   - Go to [Vercel Dashboard](https://vercel.com/dashboard)
-   - Click "New Project" and import your repository
+Add all environment variables in Netlify dashboard under "Site settings" → "Environment variables"
 
-2. **Configure Environment Variables:**
+### Step 3: Deploy
 
-   - In Vercel project settings, go to "Environment Variables"
-   - Add all the variables from your `.env.local` file
+1. Connect your GitHub repository
+2. Configure build settings
+3. Add environment variables
+4. Deploy!
 
-3. **Configure Custom Domain:**
+## 🔒 Security Considerations
 
-   - In Vercel project settings, go to "Domains"
-   - Add `admin.herbera.in` as a custom domain
-   - Configure DNS records as instructed by Vercel
-
-4. **Deploy:**
-   - Vercel will automatically deploy on every push to main branch
-   - Your app will be available at `https://admin.herbera.in`
-
-#### Option B: Deploy to Netlify
-
-1. **Build the Project:**
+### 1. Change JWT Secret
 
 ```bash
-npm run build
-```
-
-2. **Deploy:**
-   - Connect your GitHub repository to Netlify
-   - Set build command: `npm run build`
-   - Set publish directory: `.next`
-   - Add environment variables in Netlify settings
-
-#### Option C: Deploy to Your Own Server
-
-1. **Build the Project:**
-
-```bash
-npm run build
-```
-
-2. **Start Production Server:**
-
-```bash
-npm start
-```
-
-3. **Configure Reverse Proxy (Nginx):**
-
-```nginx
-server {
-    listen 80;
-    server_name admin.herbera.in;
-
-    location / {
-        proxy_pass http://localhost:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
-    }
-}
-```
-
-### 5. SSL Certificate
-
-Configure SSL certificate for `admin.herbera.in`:
-
-#### For Vercel/Netlify:
-
-- SSL is automatically provided
-
-#### For Custom Server:
-
-```bash
-# Using Certbot (Let's Encrypt)
-sudo certbot --nginx -d admin.herbera.in
-```
-
-### 6. DNS Configuration
-
-Configure your DNS to point `admin.herbera.in` to your deployment:
-
-#### For Vercel:
-
-- Add a CNAME record: `admin` → `cname.vercel-dns.com`
-- Or A record pointing to Vercel's IP
-
-#### For Netlify:
-
-- Add a CNAME record: `admin` → `your-app.netlify.app`
-
-#### For Custom Server:
-
-- Add an A record: `admin` → `your-server-ip`
-
-## 🔧 Configuration Details
-
-### Authentication System
-
-This app uses **Supabase Auth** with the following flow:
-
-1. Users authenticate via Supabase Auth (`auth.users`)
-2. User profiles are stored in `profiles` table
-3. Admin access is controlled by `role` field in profiles table
-4. JWT tokens are generated for session management
-
-### Database Schema Overview
-
-Your existing tables are used:
-
-- `profiles` - User profiles with role-based access
-- `addresses` - Customer addresses
-- `categories` - Product categories
-- `products` - Product catalog
-- `product_images` - Product images
-- `product_variants` - Product variants
-- `orders` - Customer orders
-- `order_items` - Order line items
-- `order_status_history` - Order tracking
-- `coupons` - Discount coupons
-- `coupon_usage` - Coupon usage tracking
-- `product_reviews` - Customer reviews
-
-### JWT Secret Generation
-
-Generate a strong JWT secret:
-
-```bash
-# Using OpenSSL
+# Generate a secure JWT secret
 openssl rand -base64 32
-
-# Using Node.js
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-### Security Considerations
+### 2. Update Environment Variables
 
-1. **Environment Variables:** Never commit your `.env` file to version control
-2. **JWT Secret:** Use a strong, unique secret for production
-3. **Service Role Key:** Keep your Supabase service role key secure
-4. **HTTPS:** Always use HTTPS in production
-5. **RLS:** Row Level Security is enabled on all tables
-6. **Admin Access:** Only users with `role='admin'` in profiles table can access admin APIs
+- Use a different JWT secret for production
+- Consider using environment-specific admin emails
+- Ensure all secrets are properly secured
 
-## 📱 Admin Login
+### 3. Supabase RLS Policies
 
-Once deployed, you can log in to your admin panel:
+Make sure your Supabase RLS policies are properly configured for production.
 
-- **URL:** `https://admin.herbera.in`
-- **Email:** `shantanupawar101@gmail.com`
-- **Password:** `Shantanu@123`
+## 📊 Monitoring & Analytics
 
-**Security Note:** Change the default password after first login!
+### 1. Vercel Analytics
 
-## 🔍 Testing
+- Enable Vercel Analytics in your dashboard
+- Monitor performance and errors
 
-### Local Testing
+### 2. Supabase Monitoring
 
-```bash
-# Start development server
-npm run dev
+- Check Supabase dashboard for database performance
+- Monitor API usage and limits
 
-# Test login at http://localhost:3000
+## 🔄 CI/CD Pipeline
+
+### GitHub Actions (Optional)
+
+Create `.github/workflows/deploy.yml`:
+
+```yaml
+name: Deploy to Production
+on:
+  push:
+    branches: [main]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "18"
+      - run: npm ci
+      - run: npm run build
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v20
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.ORG_ID }}
+          vercel-project-id: ${{ secrets.PROJECT_ID }}
 ```
-
-### Production Testing
-
-1. Visit `https://admin.herbera.in`
-2. Log in with the admin credentials
-3. Test all major features:
-   - Dashboard statistics
-   - Product management
-   - Order management
-   - Category management
-   - Coupon management
-   - Review moderation
 
 ## 🐛 Troubleshooting
 
-### Common Issues
+### Common Issues:
 
-1. **Authentication Errors:**
+1. **Build Failures**
 
-   - Check JWT_SECRET is set correctly
-   - Verify Supabase service role key is correct
-   - Ensure user has `role='admin'` in profiles table
-
-2. **Database Connection Issues:**
-
-   - Verify Supabase URL and keys
-   - Check if all required tables exist
-   - Verify Row Level Security policies allow service role access
-
-3. **Build Errors:**
-
-   - Ensure all dependencies are installed
-   - Check for TypeScript errors
+   - Check Node.js version (use 18.x)
    - Verify all environment variables are set
+   - Check for TypeScript errors
 
-4. **User Creation Issues:**
-   - Make sure profiles table exists
-   - Check if user registration trigger is working
-   - Verify RLS policies allow profile creation
+2. **Runtime Errors**
 
-### Logs
+   - Check browser console for errors
+   - Verify Supabase connection
+   - Check API endpoints
 
-Check application logs for errors:
+3. **Image Upload Issues**
+   - Verify Supabase Storage bucket exists
+   - Check RLS policies for storage
+   - Verify CORS settings
 
-```bash
-# Vercel
-vercel logs
+## 📝 Post-Deployment Checklist
 
-# Netlify
-netlify logs
+- [ ] Domain is properly configured
+- [ ] SSL certificate is active
+- [ ] All environment variables are set
+- [ ] Admin user can log in
+- [ ] Image uploads work
+- [ ] All API endpoints respond correctly
+- [ ] Database connections are working
+- [ ] Performance is acceptable
 
-# Custom server
-pm2 logs # if using PM2
-```
+## 🎯 Production URLs
 
-### Database Issues
-
-Check Supabase logs:
-
-1. Go to your Supabase dashboard
-2. Navigate to Logs
-3. Check for authentication and database errors
-
-## 🔄 Updates
-
-To update the application:
-
-1. Pull latest changes from repository
-2. Run database migrations if any
-3. Deploy using your chosen method
-4. Test functionality
+- **Admin Panel**: https://admin.herbera.in
+- **API Base**: https://admin.herbera.in/api
+- **Supabase Dashboard**: https://supabase.com/dashboard
 
 ## 📞 Support
 
-If you encounter issues:
+If you encounter any issues during deployment, check:
 
-1. Check the troubleshooting section above
-2. Review the application logs
-3. Verify all environment variables are correct
-4. Ensure database schema matches your existing tables
-5. Check Supabase dashboard for auth/database errors
+1. Vercel/Netlify build logs
+2. Browser console errors
+3. Supabase dashboard for database issues
+4. Network tab for API call failures
 
 ---
 
-## 📋 Deployment Checklist
-
-- [ ] Dependencies installed (`npm install`)
-- [ ] Environment variables configured
-- [ ] Database tables exist and are accessible
-- [ ] Admin user created with correct role
-- [ ] Application built successfully (`npm run build`)
-- [ ] Domain configured (`admin.herbera.in`)
-- [ ] SSL certificate configured
-- [ ] DNS records configured
-- [ ] Login functionality tested
-- [ ] All admin features tested
-- [ ] Supabase Auth integration working
-- [ ] Database queries working correctly
-
-**Your Herbera Admin Panel is ready! 🎉**
+**Note**: This application is now production-ready with proper environment configuration, security headers, and optimization settings.

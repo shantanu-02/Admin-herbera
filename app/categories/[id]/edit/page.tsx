@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,9 +33,9 @@ export default function EditCategoryPage() {
 
   useEffect(() => {
     fetchCategory();
-  }, [categoryId]);
+  }, [fetchCategory]);
 
-  const fetchCategory = async () => {
+  const fetchCategory = useCallback(async () => {
     try {
       const token = localStorage.getItem("admin_token");
       if (!token) {
@@ -68,7 +68,7 @@ export default function EditCategoryPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [categoryId, router]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({

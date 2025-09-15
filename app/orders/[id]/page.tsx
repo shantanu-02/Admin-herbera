@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -108,7 +108,7 @@ export default function OrderDetailPage() {
 
   useEffect(() => {
     fetchOrder();
-  }, [orderId]);
+  }, [fetchOrder]);
 
   useEffect(() => {
     if (order) {
@@ -123,7 +123,7 @@ export default function OrderDetailPage() {
     }
   }, [order]);
 
-  const fetchOrder = async () => {
+  const fetchOrder = useCallback(async () => {
     try {
       const token = localStorage.getItem("admin_token");
       if (!token) {
@@ -148,7 +148,7 @@ export default function OrderDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [orderId, router]);
 
   const handleUpdateOrder = async () => {
     if (!order) return;
@@ -289,7 +289,7 @@ export default function OrderDetailPage() {
             Order not found
           </h3>
           <p className="text-gray-600 mb-6">
-            The order you're looking for doesn't exist.
+            The order you&apos;re looking for doesn&apos;t exist.
           </p>
           <Button onClick={() => router.push("/orders")}>Back to Orders</Button>
         </div>

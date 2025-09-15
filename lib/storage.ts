@@ -1,4 +1,5 @@
 import { supabase, supabaseAdmin } from "./supabase";
+import { config } from "./config";
 
 export interface UploadedImage {
   url: string;
@@ -18,8 +19,8 @@ export interface ProductImage {
 // Upload a single image to Supabase Storage
 export async function uploadImage(
   file: File,
-  bucket: string = "product-images",
-  folder: string = "products"
+  bucket: string = config.storage.bucket,
+  folder: string = config.storage.folder
 ): Promise<UploadedImage> {
   try {
     // Use admin client for uploads (server-side)
@@ -109,8 +110,8 @@ async function uploadImageAdmin(
 // Upload multiple images
 export async function uploadImages(
   files: File[],
-  bucket: string = "product-images",
-  folder: string = "products"
+  bucket: string = config.storage.bucket,
+  folder: string = config.storage.folder
 ): Promise<UploadedImage[]> {
   try {
     const uploadPromises = files.map((file) =>
@@ -126,7 +127,7 @@ export async function uploadImages(
 // Delete an image from Supabase Storage
 export async function deleteImage(
   path: string,
-  bucket: string = "product-images"
+  bucket: string = config.storage.bucket
 ): Promise<void> {
   try {
     const { error } = await supabase.storage.from(bucket).remove([path]);
@@ -155,8 +156,8 @@ export function validateImageFile(file: File): {
   valid: boolean;
   error?: string;
 } {
-  const maxSize = 5 * 1024 * 1024; // 5MB
-  const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+  const maxSize = config.storage.maxFileSize;
+  const allowedTypes = config.storage.allowedTypes;
 
   if (!allowedTypes.includes(file.type)) {
     return {

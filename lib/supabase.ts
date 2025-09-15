@@ -1,29 +1,15 @@
 import { createClient } from "@supabase/supabase-js";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-if (!supabaseUrl) {
-  throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL environment variable");
-}
-
-if (!supabaseAnonKey) {
-  throw new Error("Missing NEXT_PUBLIC_SUPABASE_ANON_KEY environment variable");
-}
-
-if (!supabaseServiceKey) {
-  console.warn(
-    "Missing SUPABASE_SERVICE_ROLE_KEY environment variable. Some features may not work."
-  );
-}
+import { config } from "./config";
 
 // Client for public operations (browser)
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(
+  config.supabase.url,
+  config.supabase.anonKey
+);
 
 // Client for admin operations (server-side only)
-export const supabaseAdmin = supabaseServiceKey
-  ? createClient(supabaseUrl, supabaseServiceKey)
+export const supabaseAdmin = config.supabase.serviceRoleKey
+  ? createClient(config.supabase.url, config.supabase.serviceRoleKey)
   : null;
 
 export interface Database {

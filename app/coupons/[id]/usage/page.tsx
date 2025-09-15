@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -57,9 +57,9 @@ export default function CouponUsagePage() {
 
   useEffect(() => {
     fetchUsageData();
-  }, [couponId]);
+  }, [fetchUsageData]);
 
-  const fetchUsageData = async () => {
+  const fetchUsageData = useCallback(async () => {
     try {
       const token = localStorage.getItem("admin_token");
       if (!token) {
@@ -84,7 +84,7 @@ export default function CouponUsagePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [couponId, router]);
 
   const calculateUsagePercentage = (used: number, limit: number): number => {
     if (limit === 0) return 0; // Unlimited usage
@@ -368,7 +368,7 @@ export default function CouponUsagePage() {
                     No usage data
                   </h3>
                   <p className="text-gray-600">
-                    This coupon hasn't been used yet.
+                    This coupon hasn&apos;t been used yet.
                   </p>
                 </div>
               )}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -86,9 +86,9 @@ export default function CouponsPage() {
 
   useEffect(() => {
     fetchCoupons();
-  }, [typeFilter, activeFilter]);
+  }, [fetchCoupons]);
 
-  const fetchCoupons = async () => {
+  const fetchCoupons = useCallback(async () => {
     try {
       const token = localStorage.getItem("admin_token");
       if (!token) {
@@ -129,7 +129,7 @@ export default function CouponsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [typeFilter, activeFilter, searchQuery, router]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();

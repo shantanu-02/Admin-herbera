@@ -1,8 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { supabaseAdmin } from "./supabase";
-
-const JWT_SECRET = process.env.JWT_SECRET!;
+import { config } from "./config";
 
 export interface AdminUser {
   id: string;
@@ -31,14 +30,14 @@ export function generateToken(user: AdminUser): string {
       role: user.role,
       full_name: user.full_name,
     },
-    JWT_SECRET,
-    { expiresIn: "24h" }
+    config.jwt.secret,
+    { expiresIn: config.jwt.expiresIn }
   );
 }
 
 export function verifyToken(token: string): AdminUser | null {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    const decoded = jwt.verify(token, config.jwt.secret) as any;
     return {
       id: decoded.id,
       email: decoded.email,
@@ -55,6 +54,11 @@ export async function authenticateAdmin(
   password: string
 ): Promise<AdminUser | null> {
   try {
+    if (!supabaseAdmin) {
+      console.error("Supabase admin client not available");
+      return null;
+    }
+
     // First, authenticate with Supabase Auth
     const { data: authData, error: authError } =
       await supabaseAdmin.auth.signInWithPassword({
@@ -123,6 +127,10 @@ export async function createAdminUser(
   fullName?: string
 ) {
   try {
+    if (!supabaseAdmin) {
+      throw new Error("Supabase admin client not available");
+    }
+
     // Create user in auth.users
     const { data: authData, error: authError } =
       await supabaseAdmin.auth.admin.createUser({

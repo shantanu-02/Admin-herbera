@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -81,9 +81,9 @@ export default function OrdersPage() {
 
   useEffect(() => {
     fetchOrders();
-  }, [searchQuery, statusFilter, paymentStatusFilter]);
+  }, [fetchOrders]);
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       const token = localStorage.getItem("admin_token");
       if (!token) {
@@ -127,7 +127,7 @@ export default function OrdersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [statusFilter, paymentStatusFilter, searchQuery, router]);
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {

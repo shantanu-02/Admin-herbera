@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -52,9 +52,9 @@ export default function ReviewsPage() {
 
   useEffect(() => {
     fetchReviews();
-  }, [approvalFilter, ratingFilter]);
+  }, [fetchReviews]);
 
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     try {
       const token = localStorage.getItem("admin_token");
       if (!token) {
@@ -102,7 +102,7 @@ export default function ReviewsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [approvalFilter, ratingFilter, searchQuery, router]);
 
   const handleApproval = async (reviewId: string, isApproved: boolean) => {
     try {
