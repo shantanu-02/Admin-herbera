@@ -10,7 +10,7 @@ async function handler(
     const { id } = params;
     const { searchParams } = new URL(request.url);
 
-    const is_approved = searchParams.get("is_approved");
+    const is_approved = searchParams.get("is_approved") || undefined;
     const limit = parseInt(searchParams.get("limit") || "20");
     const offset = parseInt(searchParams.get("offset") || "0");
 

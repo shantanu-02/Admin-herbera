@@ -74,7 +74,7 @@ export async function GET(
     const { id } = params;
 
     // Get variants for this product (only active variants for public API)
-    const variants = productVariants[id] || [];
+    const variants = productVariants[id as keyof typeof productVariants] || [];
     const activeVariants = variants.filter((variant) => variant.is_active);
 
     // Format variants for public API response

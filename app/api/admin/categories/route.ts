@@ -73,10 +73,10 @@ async function handlePOST(request: NextRequest) {
       success: true,
       data: newCategory,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Categories POST error:", error);
 
-    if (error.message?.includes("duplicate key")) {
+    if (error?.message?.includes("duplicate key")) {
       return NextResponse.json(
         {
           success: false,

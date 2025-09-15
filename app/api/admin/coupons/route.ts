@@ -105,10 +105,10 @@ async function handlePOST(request: NextRequest) {
       success: true,
       data: newCoupon,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Coupons POST error:", error);
 
-    if (error.message?.includes("duplicate key")) {
+    if (error?.message?.includes("duplicate key")) {
       return NextResponse.json(
         {
           success: false,

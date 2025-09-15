@@ -46,10 +46,6 @@ export default function CategoriesPage() {
   const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
-
   const fetchCategories = useCallback(async () => {
     try {
       const token = localStorage.getItem("admin_token");
@@ -81,6 +77,10 @@ export default function CategoriesPage() {
       setLoading(false);
     }
   }, [searchQuery, router]);
+
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();

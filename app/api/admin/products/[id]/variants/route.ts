@@ -111,7 +111,7 @@ export async function GET(
     }
 
     const { id } = params;
-    const variants = productVariants[id] || [];
+    const variants = productVariants[id as keyof typeof productVariants] || [];
 
     return NextResponse.json({
       success: true,
@@ -223,10 +223,10 @@ export async function POST(
     };
 
     // Add to product variants
-    if (!productVariants[id]) {
-      productVariants[id] = [];
+    if (!productVariants[id as keyof typeof productVariants]) {
+      productVariants[id as keyof typeof productVariants] = [];
     }
-    productVariants[id].push(newVariant);
+    productVariants[id as keyof typeof productVariants].push(newVariant);
 
     return NextResponse.json({
       success: true,

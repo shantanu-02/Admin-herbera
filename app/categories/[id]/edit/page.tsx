@@ -31,10 +31,6 @@ export default function EditCategoryPage() {
     description: "",
   });
 
-  useEffect(() => {
-    fetchCategory();
-  }, [fetchCategory]);
-
   const fetchCategory = useCallback(async () => {
     try {
       const token = localStorage.getItem("admin_token");
@@ -69,6 +65,10 @@ export default function EditCategoryPage() {
       setLoading(false);
     }
   }, [categoryId, router]);
+
+  useEffect(() => {
+    fetchCategory();
+  }, [fetchCategory]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({

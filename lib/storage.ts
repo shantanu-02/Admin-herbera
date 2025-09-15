@@ -159,7 +159,7 @@ export function validateImageFile(file: File): {
   const maxSize = config.storage.maxFileSize;
   const allowedTypes = config.storage.allowedTypes;
 
-  if (!allowedTypes.includes(file.type)) {
+  if (!allowedTypes.includes(file.type as any)) {
     return {
       valid: false,
       error: "Please upload a valid image file (JPEG, PNG, or WebP)",

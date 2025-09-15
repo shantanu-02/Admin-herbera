@@ -55,10 +55,6 @@ export default function CouponUsagePage() {
   const params = useParams();
   const couponId = params.id as string;
 
-  useEffect(() => {
-    fetchUsageData();
-  }, [fetchUsageData]);
-
   const fetchUsageData = useCallback(async () => {
     try {
       const token = localStorage.getItem("admin_token");
@@ -85,6 +81,10 @@ export default function CouponUsagePage() {
       setLoading(false);
     }
   }, [couponId, router]);
+
+  useEffect(() => {
+    fetchUsageData();
+  }, [fetchUsageData]);
 
   const calculateUsagePercentage = (used: number, limit: number): number => {
     if (limit === 0) return 0; // Unlimited usage

@@ -106,23 +106,6 @@ export default function OrderDetailPage() {
   const params = useParams();
   const orderId = params.id as string;
 
-  useEffect(() => {
-    fetchOrder();
-  }, [fetchOrder]);
-
-  useEffect(() => {
-    if (order) {
-      setEditData({
-        status: order.status,
-        payment_status: order.payment_status,
-        courier_name: order.courier_name || "",
-        tracking_id: order.tracking_id || "",
-        tracking_url: order.tracking_url || "",
-        notes: "",
-      });
-    }
-  }, [order]);
-
   const fetchOrder = useCallback(async () => {
     try {
       const token = localStorage.getItem("admin_token");
@@ -149,6 +132,23 @@ export default function OrderDetailPage() {
       setLoading(false);
     }
   }, [orderId, router]);
+
+  useEffect(() => {
+    fetchOrder();
+  }, [fetchOrder]);
+
+  useEffect(() => {
+    if (order) {
+      setEditData({
+        status: order.status,
+        payment_status: order.payment_status,
+        courier_name: order.courier_name || "",
+        tracking_id: order.tracking_id || "",
+        tracking_url: order.tracking_url || "",
+        notes: "",
+      });
+    }
+  }, [order]);
 
   const handleUpdateOrder = async () => {
     if (!order) return;

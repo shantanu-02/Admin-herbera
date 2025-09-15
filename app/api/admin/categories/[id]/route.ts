@@ -10,6 +10,19 @@ async function handleGET(
   try {
     const { id } = params;
 
+    if (!supabaseAdmin) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: "INTERNAL",
+            message: "Database connection not available",
+          },
+        },
+        { status: 500 }
+      );
+    }
+
     const { data: category, error } = await supabaseAdmin
       .from("categories")
       .select("*")
@@ -78,10 +91,10 @@ async function handlePATCH(
       success: true,
       data: updatedCategory,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Category PATCH error:", error);
 
-    if (error.message?.includes("duplicate key")) {
+    if (error?.message?.includes("duplicate key")) {
       return NextResponse.json(
         {
           success: false,

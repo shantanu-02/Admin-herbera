@@ -79,10 +79,6 @@ export default function OrdersPage() {
     }
   }, [searchParams]);
 
-  useEffect(() => {
-    fetchOrders();
-  }, [fetchOrders]);
-
   const fetchOrders = useCallback(async () => {
     try {
       const token = localStorage.getItem("admin_token");
@@ -128,6 +124,10 @@ export default function OrdersPage() {
       setLoading(false);
     }
   }, [statusFilter, paymentStatusFilter, searchQuery, router]);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {

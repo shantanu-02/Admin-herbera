@@ -84,10 +84,6 @@ export default function CouponsPage() {
   const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    fetchCoupons();
-  }, [fetchCoupons]);
-
   const fetchCoupons = useCallback(async () => {
     try {
       const token = localStorage.getItem("admin_token");
@@ -130,6 +126,10 @@ export default function CouponsPage() {
       setLoading(false);
     }
   }, [typeFilter, activeFilter, searchQuery, router]);
+
+  useEffect(() => {
+    fetchCoupons();
+  }, [fetchCoupons]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();

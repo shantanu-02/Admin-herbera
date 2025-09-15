@@ -205,7 +205,7 @@ export async function GET(
     const category = categories.find((c) => c.id === product.category_id);
 
     // Get product reviews
-    const productReviews = reviews[id] || [];
+    const productReviews = reviews[id as keyof typeof reviews] || [];
     const approvedReviews = productReviews; // All reviews in mock data are approved
     const averageRating =
       approvedReviews.length > 0

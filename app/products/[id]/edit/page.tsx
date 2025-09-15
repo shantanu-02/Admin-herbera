@@ -73,11 +73,6 @@ export default function EditProductPage() {
   const [images, setImages] = useState<ProductImage[]>([]);
   const [newIngredient, setNewIngredient] = useState("");
 
-  useEffect(() => {
-    fetchProduct();
-    fetchCategories();
-  }, [fetchProduct, fetchCategories]);
-
   const fetchProduct = useCallback(async () => {
     try {
       const token = localStorage.getItem("admin_token");
@@ -154,6 +149,11 @@ export default function EditProductPage() {
       console.error("Error fetching categories:", error);
     }
   }, []);
+
+  useEffect(() => {
+    fetchProduct();
+    fetchCategories();
+  }, [fetchProduct, fetchCategories]);
 
   const handleInputChange = (field: string, value: any) => {
     setFormData((prev) => ({

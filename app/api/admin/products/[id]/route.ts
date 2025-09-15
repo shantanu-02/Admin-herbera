@@ -14,10 +14,10 @@ async function handleGET(
       success: true,
       data: product,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Product GET error:", error);
 
-    if (error.message?.includes("No rows")) {
+    if (error?.message?.includes("No rows")) {
       return NextResponse.json(
         {
           success: false,
@@ -69,10 +69,10 @@ async function handlePATCH(
       success: true,
       data: updatedProduct,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Product PATCH error:", error);
 
-    if (error.message?.includes("duplicate key")) {
+    if (error?.message?.includes("duplicate key")) {
       return NextResponse.json(
         {
           success: false,

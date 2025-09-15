@@ -10,6 +10,19 @@ async function handleGET(
   try {
     const { id } = params;
 
+    if (!supabaseAdmin) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: "INTERNAL",
+            message: "Database connection not available",
+          },
+        },
+        { status: 500 }
+      );
+    }
+
     const { data: coupon, error } = await supabaseAdmin
       .from("coupons")
       .select("*")
@@ -77,10 +90,10 @@ async function handlePATCH(
       success: true,
       data: updatedCoupon,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Coupon PATCH error:", error);
 
-    if (error.message?.includes("duplicate key")) {
+    if (error?.message?.includes("duplicate key")) {
       return NextResponse.json(
         {
           success: false,

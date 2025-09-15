@@ -24,13 +24,13 @@ export async function withAdminAuth<T extends any[]>(
   // Add user info to request for handlers that need it
   (request as any).user = user;
 
-  return handler(request);
+  return handler(request, ...([] as unknown as T));
 }
 
 export function createAuthenticatedHandler(
   handler: (request: NextRequest, ...args: any[]) => Promise<NextResponse>
 ) {
-  return async (request: NextRequest, ...args: any[]) => {
+  return async (request: NextRequest, ...args: any[]): Promise<NextResponse> => {
     const authHeader = request.headers.get("authorization");
     const user = await verifyAdminToken(authHeader);
 

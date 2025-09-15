@@ -54,10 +54,6 @@ export default function NewProductPage() {
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
-
   const fetchCategories = useCallback(async () => {
     try {
       const token = localStorage.getItem("admin_token");
@@ -82,6 +78,10 @@ export default function NewProductPage() {
       setLoading(false);
     }
   }, [router]);
+
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
 
   const handleInputChange = (field: string, value: any) => {
     setFormData((prev) => ({

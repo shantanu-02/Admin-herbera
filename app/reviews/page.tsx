@@ -50,10 +50,6 @@ export default function ReviewsPage() {
   const [ratingFilter, setRatingFilter] = useState<string>("");
   const router = useRouter();
 
-  useEffect(() => {
-    fetchReviews();
-  }, [fetchReviews]);
-
   const fetchReviews = useCallback(async () => {
     try {
       const token = localStorage.getItem("admin_token");
@@ -103,6 +99,10 @@ export default function ReviewsPage() {
       setLoading(false);
     }
   }, [approvalFilter, ratingFilter, searchQuery, router]);
+
+  useEffect(() => {
+    fetchReviews();
+  }, [fetchReviews]);
 
   const handleApproval = async (reviewId: string, isApproved: boolean) => {
     try {

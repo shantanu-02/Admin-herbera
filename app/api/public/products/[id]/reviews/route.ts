@@ -12,6 +12,19 @@ export async function GET(
     const limit = parseInt(searchParams.get("limit") || "10");
     const offset = parseInt(searchParams.get("offset") || "0");
 
+    if (!supabaseAdmin) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: "INTERNAL",
+            message: "Database connection not available",
+          },
+        },
+        { status: 500 }
+      );
+    }
+
     // Get reviews for this product (only approved reviews for public API)
     let query = supabaseAdmin
       .from("product_reviews")

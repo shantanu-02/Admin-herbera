@@ -98,11 +98,6 @@ export default function ProductDetailPage() {
   const params = useParams();
   const productId = params.id as string;
 
-  useEffect(() => {
-    fetchProduct();
-    fetchReviews();
-  }, [fetchProduct, fetchReviews]);
-
   const fetchProduct = useCallback(async () => {
     try {
       const token = localStorage.getItem("admin_token");
@@ -145,6 +140,11 @@ export default function ProductDetailPage() {
       console.error("Failed to fetch reviews:", error);
     }
   }, [productId]);
+
+  useEffect(() => {
+    fetchProduct();
+    fetchReviews();
+  }, [fetchProduct, fetchReviews]);
 
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this product?")) return;

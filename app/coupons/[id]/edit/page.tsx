@@ -56,10 +56,6 @@ export default function EditCouponPage() {
     is_active: true,
   });
 
-  useEffect(() => {
-    fetchCoupon();
-  }, [fetchCoupon]);
-
   const fetchCoupon = useCallback(async () => {
     try {
       const token = localStorage.getItem("admin_token");
@@ -107,6 +103,10 @@ export default function EditCouponPage() {
       setLoading(false);
     }
   }, [couponId, router]);
+
+  useEffect(() => {
+    fetchCoupon();
+  }, [fetchCoupon]);
 
   const handleInputChange = (field: string, value: any) => {
     setFormData((prev) => ({

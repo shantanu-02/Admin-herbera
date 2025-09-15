@@ -73,11 +73,6 @@ export default function ProductsPage() {
   const [sortBy, setSortBy] = useState<string>("");
   const router = useRouter();
 
-  useEffect(() => {
-    fetchCategories();
-    fetchProducts();
-  }, [fetchCategories, fetchProducts]);
-
   const fetchCategories = useCallback(async () => {
     try {
       const token = localStorage.getItem("admin_token");
@@ -127,6 +122,11 @@ export default function ProductsPage() {
       setLoading(false);
     }
   }, [searchQuery, selectedCategory, activeFilter, sortBy, router]);
+
+  useEffect(() => {
+    fetchCategories();
+    fetchProducts();
+  }, [fetchCategories, fetchProducts]);
 
   const handleDelete = async (productId: string) => {
     if (!confirm("Are you sure you want to delete this product?")) return;
