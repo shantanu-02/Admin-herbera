@@ -37,16 +37,20 @@ import { useRouter, useParams } from "next/navigation";
 
 interface OrderItem {
   id: string;
+  order_id: string;
   product_id: string;
   sku: string;
   name: string;
   price: number;
   quantity: number;
   total: number;
+  original_price: number;
+  discount_percent: number;
 }
 
 interface Address {
   id: string;
+  user_id: string;
   recipient_name: string;
   phone: string;
   line1: string;
@@ -55,12 +59,15 @@ interface Address {
   state: string;
   postal_code: string;
   country: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface StatusHistory {
   id: string;
+  order_id: string;
   status: string;
-  notes: string;
+  notes?: string;
   changed_at: string;
 }
 
@@ -70,24 +77,30 @@ interface Order {
   user_id: string;
   status: string;
   payment_status: string;
-  payment_method: string;
+  payment_method?: string;
   subtotal: number;
   shipping_charges: number;
   discount: number;
   total_amount: number;
-  courier_name: string;
-  tracking_id: string;
-  tracking_url: string;
+  shipping_address_id?: string;
+  billing_address_id?: string;
+  courier_name?: string;
+  tracking_id?: string;
+  tracking_url?: string;
   placed_at: string;
   updated_at: string;
-  shipping_address: Address;
-  billing_address: Address;
-  customer: {
-    id: string;
+  created_by?: string;
+  updated_by?: string;
+  razorpay_payment_id?: string;
+  razorpay_order_id?: string;
+  shipping_address?: Address;
+  billing_address?: Address;
+  profiles?: {
     email: string;
+    full_name: string;
   };
-  items: OrderItem[];
-  status_history: StatusHistory[];
+  order_items?: OrderItem[];
+  order_status_history?: StatusHistory[];
 }
 
 export default function OrderDetailPage() {
@@ -367,7 +380,7 @@ export default function OrderDetailPage() {
                     <div className="space-y-2 text-sm">
                       <div>
                         <span className="font-medium">Email:</span>{" "}
-                        {order.customer.email}
+                        {order.profiles?.email || "No email"}
                       </div>
                       <div>
                         <span className="font-medium">Order Date:</span>{" "}
@@ -375,8 +388,20 @@ export default function OrderDetailPage() {
                       </div>
                       <div>
                         <span className="font-medium">Payment Method:</span>{" "}
-                        {order.payment_method}
+                        {order.payment_method || "N/A"}
                       </div>
+                      {order.razorpay_payment_id && (
+                        <div>
+                          <span className="font-medium">Payment ID:</span>{" "}
+                          {order.razorpay_payment_id}
+                        </div>
+                      )}
+                      {order.razorpay_order_id && (
+                        <div>
+                          <span className="font-medium">Order ID:</span>{" "}
+                          {order.razorpay_order_id}
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -473,19 +498,19 @@ export default function OrderDetailPage() {
                     </h4>
                     <div className="text-sm text-gray-600 space-y-1">
                       <div className="font-medium">
-                        {order.shipping_address.recipient_name}
+                        {order.shipping_address?.recipient_name || "No address"}
                       </div>
-                      <div>{order.shipping_address.phone}</div>
-                      <div>{order.shipping_address.line1}</div>
-                      {order.shipping_address.line2 && (
+                      <div>{order.shipping_address?.phone || ""}</div>
+                      <div>{order.shipping_address?.line1 || ""}</div>
+                      {order.shipping_address?.line2 && (
                         <div>{order.shipping_address.line2}</div>
                       )}
                       <div>
-                        {order.shipping_address.city},{" "}
-                        {order.shipping_address.state}{" "}
-                        {order.shipping_address.postal_code}
+                        {order.shipping_address?.city},{" "}
+                        {order.shipping_address?.state}{" "}
+                        {order.shipping_address?.postal_code}
                       </div>
-                      <div>{order.shipping_address.country}</div>
+                      <div>{order.shipping_address?.country}</div>
                     </div>
                   </div>
 
@@ -597,7 +622,7 @@ export default function OrderDetailPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {order.items.map((item) => (
+                  {order.order_items?.map((item) => (
                     <div
                       key={item.id}
                       className="flex items-center justify-between p-4 border rounded-lg"
@@ -610,12 +635,22 @@ export default function OrderDetailPage() {
                         <p className="text-sm text-gray-600">
                           Quantity: {item.quantity}
                         </p>
+                        {item.discount_percent > 0 && (
+                          <p className="text-sm text-green-600">
+                            {item.discount_percent}% discount applied
+                          </p>
+                        )}
                       </div>
                       <div className="text-right">
                         <div className="font-medium">₹{item.total}</div>
                         <div className="text-sm text-gray-600">
                           ₹{item.price} each
                         </div>
+                        {item.original_price > item.price && (
+                          <div className="text-sm text-gray-500 line-through">
+                            ₹{item.original_price}
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -703,9 +738,10 @@ export default function OrderDetailPage() {
 
                   {/* Status History */}
                   <div className="space-y-4">
-                    {order.status_history.map((status, index) => (
+                    {order.order_status_history?.map((status, index) => (
                       <div key={status.id} className="relative">
-                        {index < order.status_history.length - 1 && (
+                        {index <
+                          (order.order_status_history?.length || 0) - 1 && (
                           <div className="absolute left-3 top-8 bottom-0 w-px bg-gray-200"></div>
                         )}
                         <div className="flex items-start">

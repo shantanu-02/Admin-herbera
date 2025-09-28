@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAuthenticatedHandler } from "@/lib/api-auth";
-import { getOrderById, updateRecord } from "@/lib/database";
+import {
+  getPartnerOfMonthById,
+  updateRecord,
+  deleteRecord,
+} from "@/lib/database";
 
 async function handleGET(
   request: NextRequest,
@@ -8,15 +12,15 @@ async function handleGET(
 ) {
   try {
     const { id } = params;
-    const order = await getOrderById(id);
+    const partner = await getPartnerOfMonthById(id);
 
-    if (!order) {
+    if (!partner) {
       return NextResponse.json(
         {
           success: false,
           error: {
             code: "NOT_FOUND",
-            message: "Order not found",
+            message: "Partner not found",
           },
         },
         { status: 404 }
@@ -25,10 +29,10 @@ async function handleGET(
 
     return NextResponse.json({
       success: true,
-      data: order,
+      data: partner,
     });
   } catch (error) {
-    console.error("Order GET error:", error);
+    console.error("Partner GET error:", error);
     return NextResponse.json(
       {
         success: false,
@@ -61,18 +65,46 @@ async function handlePATCH(
     delete updateData.id;
     delete updateData.created_at;
     delete updateData.created_by;
-    delete updateData.user_id;
-    delete updateData.order_number;
-    delete updateData.placed_at;
 
-    const updatedOrder = await updateRecord("orders", id, updateData);
+    const updatedPartner = await updateRecord(
+      "partners_of_month",
+      id,
+      updateData
+    );
 
     return NextResponse.json({
       success: true,
-      data: updatedOrder,
+      data: updatedPartner,
     });
   } catch (error) {
-    console.error("Order PATCH error:", error);
+    console.error("Partner PATCH error:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: "INTERNAL",
+          message: "Internal server error",
+        },
+      },
+      { status: 500 }
+    );
+  }
+}
+
+async function handleDELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const { id } = params;
+    await deleteRecord("partners_of_month", id);
+
+    return NextResponse.json({
+      success: true,
+      message: "Partner deleted successfully",
+    });
+  } catch (error) {
+    console.error("Partner DELETE error:", error);
     return NextResponse.json(
       {
         success: false,
@@ -88,3 +120,4 @@ async function handlePATCH(
 
 export const GET = createAuthenticatedHandler(handleGET);
 export const PATCH = createAuthenticatedHandler(handlePATCH);
+export const DELETE = createAuthenticatedHandler(handleDELETE);

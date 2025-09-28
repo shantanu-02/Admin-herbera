@@ -45,15 +45,34 @@ interface Order {
   placed_at: string;
   updated_at: string;
   items_count: number;
-  customer: {
-    id: string;
+  courier_name?: string;
+  tracking_id?: string;
+  tracking_url?: string;
+  razorpay_payment_id?: string;
+  razorpay_order_id?: string;
+  profiles?: {
     email: string;
+    full_name: string;
   };
-  shipping_address: {
+  shipping_address?: {
     recipient_name: string;
+    phone: string;
+    line1: string;
+    line2?: string;
     city: string;
     state: string;
     postal_code: string;
+    country: string;
+  };
+  billing_address?: {
+    recipient_name: string;
+    phone: string;
+    line1: string;
+    line2?: string;
+    city: string;
+    state: string;
+    postal_code: string;
+    country: string;
   };
 }
 
@@ -107,9 +126,9 @@ export default function OrdersPage() {
           filteredOrders = filteredOrders.filter(
             (order: Order) =>
               order.order_number.toLowerCase().includes(searchTerm) ||
-              order.customer.email.toLowerCase().includes(searchTerm) ||
-              order.shipping_address.recipient_name
-                .toLowerCase()
+              order.profiles?.email?.toLowerCase().includes(searchTerm) ||
+              order.shipping_address?.recipient_name
+                ?.toLowerCase()
                 .includes(searchTerm)
           );
         }
@@ -290,7 +309,7 @@ export default function OrdersPage() {
                       {getPaymentStatusBadge(order.payment_status)}
                     </div>
                     <div className="flex items-center space-x-4 text-sm text-gray-600">
-                      <span>{order.customer.email}</span>
+                      <span>{order.profiles?.email || "No email"}</span>
                       <span>•</span>
                       <span>{order.items_count} items</span>
                       <span>•</span>
@@ -321,13 +340,13 @@ export default function OrdersPage() {
                     </h4>
                     <div className="text-sm text-gray-600 space-y-1">
                       <div className="font-medium">
-                        {order.shipping_address.recipient_name}
+                        {order.shipping_address?.recipient_name || "No address"}
                       </div>
                       <div>
-                        {order.shipping_address.city},{" "}
-                        {order.shipping_address.state}
+                        {order.shipping_address?.city},{" "}
+                        {order.shipping_address?.state}
                       </div>
-                      <div>{order.shipping_address.postal_code}</div>
+                      <div>{order.shipping_address?.postal_code}</div>
                     </div>
                   </div>
 
@@ -362,10 +381,15 @@ export default function OrdersPage() {
                   <div>
                     <h4 className="font-medium text-gray-900 mb-2">Payment</h4>
                     <div className="text-sm text-gray-600 space-y-1">
-                      <div>Method: {order.payment_method}</div>
+                      <div>Method: {order.payment_method || "N/A"}</div>
                       <div>
                         Status: {getPaymentStatusBadge(order.payment_status)}
                       </div>
+                      {order.razorpay_payment_id && (
+                        <div className="text-xs text-gray-500">
+                          Payment ID: {order.razorpay_payment_id}
+                        </div>
+                      )}
                       <div className="text-xs text-gray-500 mt-2">
                         Last updated:{" "}
                         {new Date(order.updated_at).toLocaleString()}

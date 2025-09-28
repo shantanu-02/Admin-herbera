@@ -24,22 +24,27 @@ import { useRouter } from "next/navigation";
 
 interface Review {
   id: string;
-  title: string;
+  product_id: string;
+  user_id: string;
+  title?: string;
   review_text: string;
-  rating: number;
   is_verified_purchase: boolean;
   is_approved: boolean;
   helpful_count: number;
   created_at: string;
   updated_at: string;
-  product: {
+  rating: number;
+  products?: {
     id: string;
     name: string;
   };
-  user: {
+  profiles?: {
     id: string;
     email: string;
+    full_name?: string;
   };
+  hasPurchased?: boolean;
+  purchaseDetails?: any;
 }
 
 export default function ReviewsPage() {
@@ -75,10 +80,10 @@ export default function ReviewsPage() {
           const searchTerm = searchQuery.toLowerCase();
           filteredReviews = filteredReviews.filter(
             (review: Review) =>
-              review.title.toLowerCase().includes(searchTerm) ||
+              review.title?.toLowerCase().includes(searchTerm) ||
               review.review_text.toLowerCase().includes(searchTerm) ||
-              review.product.name.toLowerCase().includes(searchTerm) ||
-              review.user.email.toLowerCase().includes(searchTerm)
+              review.products?.name?.toLowerCase().includes(searchTerm) ||
+              review.profiles?.email?.toLowerCase().includes(searchTerm)
           );
         }
 
@@ -100,56 +105,114 @@ export default function ReviewsPage() {
     }
   }, [approvalFilter, ratingFilter, searchQuery, router]);
 
-  useEffect(() => {
-    fetchReviews();
-  }, [fetchReviews]);
-
-  const handleApproval = async (reviewId: string, isApproved: boolean) => {
+  const verifyPurchase = async (
+    reviewId: string,
+    userId: string,
+    productId: string
+  ) => {
     try {
       const token = localStorage.getItem("admin_token");
+      if (!token) return;
+
+      const response = await fetch("/api/admin/reviews/verify", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ userId, productId }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setReviews((prev) =>
+          prev.map((review) =>
+            review.id === reviewId
+              ? {
+                  ...review,
+                  hasPurchased: data.data.hasPurchased,
+                  purchaseDetails: data.data.purchaseDetails,
+                }
+              : review
+          )
+        );
+        toast.success(
+          data.data.hasPurchased
+            ? "User has purchased this product"
+            : "User has not purchased this product"
+        );
+      } else {
+        toast.error("Failed to verify purchase");
+      }
+    } catch (error) {
+      toast.error("Failed to verify purchase");
+    }
+  };
+
+  const updateReviewStatus = async (
+    reviewId: string,
+    updates: Partial<Review>
+  ) => {
+    try {
+      const token = localStorage.getItem("admin_token");
+      if (!token) return;
+
       const response = await fetch(`/api/admin/reviews/${reviewId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ is_approved: isApproved }),
+        body: JSON.stringify(updates),
       });
 
       if (response.ok) {
-        toast.success(
-          `Review ${isApproved ? "approved" : "rejected"} successfully`
+        setReviews((prev) =>
+          prev.map((review) =>
+            review.id === reviewId ? { ...review, ...updates } : review
+          )
         );
-        fetchReviews();
+        toast.success("Review updated successfully");
       } else {
-        const data = await response.json();
-        toast.error(data.error?.message || "Failed to update review");
+        toast.error("Failed to update review");
       }
     } catch (error) {
       toast.error("Failed to update review");
     }
   };
 
-  const handleDelete = async (reviewId: string) => {
-    if (!confirm("Are you sure you want to delete this review?")) return;
-
+  const deleteReview = async (reviewId: string) => {
     try {
       const token = localStorage.getItem("admin_token");
+      if (!token) return;
+
       const response = await fetch(`/api/admin/reviews/${reviewId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.ok) {
+        setReviews((prev) => prev.filter((review) => review.id !== reviewId));
         toast.success("Review deleted successfully");
-        fetchReviews();
       } else {
-        const data = await response.json();
-        toast.error(data.error?.message || "Failed to delete review");
+        toast.error("Failed to delete review");
       }
     } catch (error) {
       toast.error("Failed to delete review");
     }
+  };
+
+  useEffect(() => {
+    fetchReviews();
+  }, [fetchReviews]);
+
+  const handleApproval = async (reviewId: string, isApproved: boolean) => {
+    await updateReviewStatus(reviewId, { is_approved: isApproved });
+  };
+
+  const handleDelete = async (reviewId: string) => {
+    if (!confirm("Are you sure you want to delete this review?")) return;
+    await deleteReview(reviewId);
   };
 
   const renderStars = (rating: number) => {
@@ -277,9 +340,13 @@ export default function ReviewsPage() {
                       {review.title}
                     </CardTitle>
                     <div className="flex items-center space-x-4 text-sm text-gray-600">
-                      <span>Product: {review.product.name}</span>
+                      <span>
+                        Product: {review.products?.name || "Unknown Product"}
+                      </span>
                       <span>•</span>
-                      <span>By: {review.user.email}</span>
+                      <span>
+                        By: {review.profiles?.email || "Unknown User"}
+                      </span>
                       <span>•</span>
                       <span>
                         Posted:{" "}
@@ -288,6 +355,21 @@ export default function ReviewsPage() {
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
+                    <Button
+                      onClick={() =>
+                        verifyPurchase(
+                          review.id,
+                          review.user_id,
+                          review.product_id
+                        )
+                      }
+                      variant="ghost"
+                      size="sm"
+                      className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                      title="Verify if user purchased this product"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </Button>
                     {!review.is_approved && (
                       <>
                         <Button
@@ -328,7 +410,28 @@ export default function ReviewsPage() {
                 </div>
 
                 <div className="flex items-center justify-between text-sm text-gray-600">
-                  <span>{review.helpful_count} people found this helpful</span>
+                  <div className="flex items-center space-x-4">
+                    <span>
+                      {review.helpful_count} people found this helpful
+                    </span>
+                    {review.hasPurchased !== undefined && (
+                      <Badge
+                        variant={review.hasPurchased ? "default" : "secondary"}
+                      >
+                        {review.hasPurchased
+                          ? "Verified Purchase"
+                          : "Not Purchased"}
+                      </Badge>
+                    )}
+                    {review.is_verified_purchase && (
+                      <Badge
+                        variant="outline"
+                        className="text-green-600 border-green-200"
+                      >
+                        Verified by System
+                      </Badge>
+                    )}
+                  </div>
                   <div className="flex items-center space-x-4">
                     {review.is_approved ? (
                       <Button

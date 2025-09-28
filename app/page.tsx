@@ -346,7 +346,7 @@ export default function HomePage() {
             <CardDescription>Frequently used admin actions</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
               <Button
                 onClick={() => router.push("/products/new")}
                 className="h-12 bg-emerald-600 hover:bg-emerald-700 shadow-md hover:shadow-lg transition-all duration-200"
@@ -366,6 +366,20 @@ export default function HomePage() {
                 className="h-12 border-gray-300 hover:bg-gray-50 shadow-md hover:shadow-lg transition-all duration-200"
               >
                 Create Coupon
+              </Button>
+              <Button
+                onClick={() => router.push("/blogs/new")}
+                variant="outline"
+                className="h-12 border-gray-300 hover:bg-gray-50 shadow-md hover:shadow-lg transition-all duration-200"
+              >
+                New Blog Post
+              </Button>
+              <Button
+                onClick={() => router.push("/partners/new")}
+                variant="outline"
+                className="h-12 border-gray-300 hover:bg-gray-50 shadow-md hover:shadow-lg transition-all duration-200"
+              >
+                New Partner
               </Button>
               <Button
                 onClick={() => router.push("/orders?status=pending")}
