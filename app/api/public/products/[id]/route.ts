@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getProductById, getProductBySlug } from "@/lib/database";
 
 // Mock products data (same as in the list endpoint)
 const products = [
   {
     id: "1",
     name: "Vitamin C Face Serum",
+    slug: "vitamin-c-face-serum",
     description:
       "A powerful antioxidant serum that brightens skin and reduces fine lines. Perfect for daily use.",
     category_id: "1",
@@ -51,6 +53,7 @@ const products = [
   {
     id: "2",
     name: "Nourishing Hair Oil",
+    slug: "nourishing-hair-oil",
     description:
       "Natural hair oil blend that promotes hair growth and adds shine. Made with organic ingredients.",
     category_id: "2",
@@ -89,6 +92,7 @@ const products = [
   {
     id: "3",
     name: "Gentle Face Cleanser",
+    slug: "gentle-face-cleanser",
     description:
       "Mild foaming cleanser suitable for all skin types. Removes impurities without stripping natural oils.",
     category_id: "1",
@@ -185,8 +189,32 @@ export async function GET(
   try {
     const { id } = params;
 
-    // Find the product
-    const product = products.find((p) => p.id === id && p.is_active);
+    // Check if the parameter is a UUID (ID-based lookup) or slug-based lookup
+    const isUUID =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        id
+      );
+
+    let product: any;
+    let useDatabase = false;
+
+    try {
+      // Try database lookup first
+      if (isUUID) {
+        product = await getProductById(id);
+      } else {
+        product = await getProductBySlug(id);
+      }
+      useDatabase = true;
+    } catch (error) {
+      // Fallback to mock data if database is not available
+      console.log("Database not available, using mock data");
+      if (isUUID) {
+        product = products.find((p) => p.id === id && p.is_active);
+      } else {
+        product = products.find((p) => p.slug === id && p.is_active);
+      }
+    }
 
     if (!product) {
       return NextResponse.json(
@@ -201,22 +229,25 @@ export async function GET(
       );
     }
 
-    // Get category info
-    const category = categories.find((c) => c.id === product.category_id);
+    let category;
+    let productReviews;
 
-    // Get product reviews
-    const productReviews = reviews[id as keyof typeof reviews] || [];
-    const approvedReviews = productReviews; // All reviews in mock data are approved
-    const averageRating =
-      approvedReviews.length > 0
-        ? approvedReviews.reduce((sum, review) => sum + review.rating, 0) /
-          approvedReviews.length
-        : 0;
+    if (useDatabase) {
+      // Database category lookup
+      category = product.categories;
+      // Get reviews from database
+      productReviews = product.reviews || [];
+    } else {
+      // Mock data lookup
+      category = categories.find((c) => c.id === product.category_id);
+      productReviews = reviews[product.id as keyof typeof reviews] || [];
+    }
 
     // Format response
     const response = {
       id: product.id,
       name: product.name,
+      slug: product.slug,
       description: product.description,
       category: {
         id: category?.id || "",
@@ -233,13 +264,27 @@ export async function GET(
       rating: product.rating,
       is_active: product.is_active,
       sku: product.sku,
-      ingredients: product.ingredients,
+      ingredients: Array.isArray(product.ingredients)
+        ? product.ingredients
+        : [],
       images: product.images,
-      variants: product.variants.filter((variant) => variant.is_active),
+      variants: (product.variants || []).filter(
+        (variant: any) => variant.is_active
+      ),
       reviews: {
-        average_rating: parseFloat(averageRating.toFixed(1)),
-        total_count: approvedReviews.length,
-        recent_reviews: approvedReviews.slice(0, 5), // Show max 5 recent reviews
+        average_rating:
+          product.reviews?.average_rating ||
+          parseFloat(
+            (productReviews.length > 0
+              ? productReviews.reduce(
+                  (sum: number, review: any) => sum + review.rating,
+                  0
+                ) / productReviews.length
+              : 0
+            ).toFixed(1)
+          ),
+        total_count: product.reviews?.total_count || productReviews.length,
+        recent_reviews: productReviews.slice(0, 5), // Show max 5 recent reviews
       },
     };
 
@@ -248,6 +293,7 @@ export async function GET(
       data: response,
     });
   } catch (error) {
+    console.error("Product GET error:", error);
     return NextResponse.json(
       {
         success: false,

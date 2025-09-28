@@ -19,10 +19,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Save, X } from "lucide-react";
+import { ArrowLeft, Save, X, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { ImageUpload, ProductImage } from "@/components/ui/image-upload";
+import { generateSlug } from "@/lib/utils";
 
 interface Category {
   id: string;
@@ -36,6 +37,7 @@ export default function NewProductPage() {
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
+    slug: "",
     description: "",
     category_id: "",
     price: "",
@@ -83,6 +85,13 @@ export default function NewProductPage() {
     fetchCategories();
   }, [fetchCategories]);
 
+  // Auto-generate slug from name if not manually edited
+  useEffect(() => {
+    if (formData.name && !formData.slug) {
+      handleInputChange("slug", generateSlug(formData.name));
+    }
+  }, [formData.name, formData.slug]);
+
   const handleInputChange = (field: string, value: any) => {
     setFormData((prev) => ({
       ...prev,
@@ -117,6 +126,14 @@ export default function NewProductPage() {
       !formData.sku
     ) {
       toast.error("Please fill in all required fields");
+      return;
+    }
+
+    // Validate slug format
+    if (formData.slug && !/^[a-z0-9-]+$/.test(formData.slug)) {
+      toast.error(
+        "Slug can only contain lowercase letters, numbers, and hyphens"
+      );
       return;
     }
 
@@ -287,6 +304,35 @@ export default function NewProductPage() {
                       placeholder="Enter product name"
                       required
                     />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="slug">URL Slug</Label>
+                    <Input
+                      id="slug"
+                      value={formData.slug}
+                      onChange={(e) =>
+                        handleInputChange("slug", e.target.value)
+                      }
+                      placeholder="url-friendly-slug"
+                      className="font-mono"
+                      required
+                    />
+                    <p className="text-sm text-gray-500 mt-1">
+                      Leave empty to auto-generate from product name. Used for
+                      SEO-friendly URLs.
+                    </p>
+                    {formData.slug && (
+                      <div className="mt-2 p-3 bg-gray-50 border border-gray-200 rounded-md">
+                        <div className="flex items-center text-sm text-gray-600">
+                          <Eye className="w-4 h-4 mr-2" />
+                          <span className="font-medium">URL Preview:</span>
+                        </div>
+                        <div className="mt-1 text-sm text-gray-800 font-mono bg-white p-2 rounded border">
+                          /products/{formData.slug}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div>

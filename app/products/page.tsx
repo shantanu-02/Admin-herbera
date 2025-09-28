@@ -35,6 +35,7 @@ import Image from "next/image";
 interface Product {
   id: string;
   name: string;
+  slug: string;
   description: string;
   category: {
     id: string;
@@ -346,6 +347,11 @@ export default function ProductsPage() {
                       <span>•</span>
                       <span>SKU: {product.sku || "N/A"}</span>
                     </div>
+                    {product.slug && (
+                      <div className="text-xs text-gray-500 font-mono bg-gray-50 px-2 py-1 rounded mt-1">
+                        /{product.slug}
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardHeader>

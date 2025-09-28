@@ -87,6 +87,7 @@ async function handlePOST(request: NextRequest) {
     // Prepare product data
     const productData = {
       name: data.name,
+      slug: data.slug || null, // Allow null to trigger auto-generation
       description: data.description || null,
       category_id: data.category_id,
       price: parseFloat(data.price),

@@ -202,6 +202,64 @@ export async function getProductById(id: string) {
   }
 }
 
+export async function getProductBySlug(slug: string) {
+  try {
+    checkSupabaseAdmin();
+    const { data: product, error: productError } = await supabaseAdmin!
+      .from("products")
+      .select(
+        `
+        *,
+        categories!inner(id, name, slug)
+      `
+      )
+      .eq("slug", slug)
+      .eq("is_active", true)
+      .single();
+
+    if (productError) throw productError;
+
+    // Get product variants, images, and review counts
+    const [variantsResult, imagesResult, reviewsResult] = await Promise.all([
+      supabaseAdmin!
+        .from("product_variants")
+        .select("*")
+        .eq("product_id", product.id),
+      supabaseAdmin!
+        .from("product_images")
+        .select("*")
+        .eq("product_id", product.id)
+        .order("sort_order"),
+      supabaseAdmin!
+        .from("product_reviews")
+        .select("id, rating, is_approved")
+        .eq("product_id", product.id),
+    ]);
+
+    const reviews = reviewsResult.data || [];
+    const approvedReviews = reviews.filter((r) => r.is_approved);
+
+    return {
+      ...product,
+      variants: variantsResult.data || [],
+      images: imagesResult.data || [],
+      reviews: {
+        total_count: reviews.length,
+        approved_count: approvedReviews.length,
+        pending_count: reviews.length - approvedReviews.length,
+        average_rating:
+          approvedReviews.length > 0
+            ? approvedReviews.reduce((sum, r) => sum + r.rating, 0) /
+              approvedReviews.length
+            : 0,
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching product by slug:", error);
+    throw error;
+  }
+}
+
 // Categories
 export async function getCategories(params: {
   q?: string;

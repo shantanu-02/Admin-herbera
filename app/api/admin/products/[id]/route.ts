@@ -52,6 +52,20 @@ async function handlePATCH(
     const data = await request.json();
     const user = (request as any).user;
 
+    // Validate slug format if provided
+    if (data.slug && !/^[a-z0-9-]+$/.test(data.slug)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: "BAD_REQUEST",
+            message: "Slug can only contain lowercase letters, numbers, and hyphens",
+          },
+        },
+        { status: 400 }
+      );
+    }
+
     // Prepare update data
     const updateData = {
       ...data,
