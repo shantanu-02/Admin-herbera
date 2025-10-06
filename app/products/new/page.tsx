@@ -122,7 +122,9 @@ export default function NewProductPage() {
     if (
       !formData.name ||
       !formData.category_id ||
-      !formData.price ||
+      formData.price === null ||
+      formData.price === undefined ||
+      formData.price === "" ||
       !formData.sku
     ) {
       toast.error("Please fill in all required fields");

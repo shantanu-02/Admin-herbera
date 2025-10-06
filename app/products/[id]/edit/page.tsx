@@ -185,14 +185,22 @@ export default function EditProductPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.category_id || !formData.price) {
+    if (
+      !formData.name ||
+      !formData.category_id ||
+      formData.price === null ||
+      formData.price === undefined ||
+      formData.price === ""
+    ) {
       toast.error("Please fill in all required fields");
       return;
     }
 
     // Validate slug format
     if (formData.slug && !/^[a-z0-9-]+$/.test(formData.slug)) {
-      toast.error("Slug can only contain lowercase letters, numbers, and hyphens");
+      toast.error(
+        "Slug can only contain lowercase letters, numbers, and hyphens"
+      );
       return;
     }
 
@@ -364,14 +372,13 @@ export default function EditProductPage() {
                 <Input
                   id="slug"
                   value={formData.slug}
-                  onChange={(e) =>
-                    handleInputChange("slug", e.target.value)
-                  }
+                  onChange={(e) => handleInputChange("slug", e.target.value)}
                   placeholder="url-friendly-slug"
                   className="font-mono"
                 />
                 <p className="text-sm text-gray-500 mt-1">
-                  Used for SEO-friendly URLs. Leave empty to auto-generate from product name.
+                  Used for SEO-friendly URLs. Leave empty to auto-generate from
+                  product name.
                 </p>
                 {formData.slug && (
                   <div className="mt-2 p-3 bg-gray-50 border border-gray-200 rounded-md">

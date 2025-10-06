@@ -71,7 +71,13 @@ async function handlePOST(request: NextRequest) {
     const user = (request as any).user;
 
     // Validate required fields
-    if (!data.name || !data.category_id || !data.price || !data.sku) {
+    if (
+      !data.name ||
+      !data.category_id ||
+      data.price === null ||
+      data.price === undefined ||
+      !data.sku
+    ) {
       return NextResponse.json(
         {
           success: false,

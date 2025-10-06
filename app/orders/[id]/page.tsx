@@ -31,9 +31,26 @@ import {
   CreditCard,
   Edit,
   Save,
+  Ship,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter, useParams } from "next/navigation";
+
+// Courier services configuration
+const COURIER_SERVICES = [
+  {
+    name: "Anjani Courier",
+    trackingUrl: "https://trackcourier.io/anjani-courier-tracking",
+  },
+  {
+    name: "Shree Maruti",
+    trackingUrl: "https://shreemaruti.com/track-shipment/",
+  },
+  {
+    name: "Shree Mahavir Express",
+    trackingUrl: "http://shreemahavircourier.com/",
+  },
+];
 
 interface OrderItem {
   id: string;
@@ -67,7 +84,6 @@ interface StatusHistory {
   id: string;
   order_id: string;
   status: string;
-  notes?: string;
   changed_at: string;
 }
 
@@ -87,6 +103,7 @@ interface Order {
   courier_name?: string;
   tracking_id?: string;
   tracking_url?: string;
+  is_shipped?: boolean;
   placed_at: string;
   updated_at: string;
   created_by?: string;
@@ -107,13 +124,14 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [selectedCourierOption, setSelectedCourierOption] =
+    useState<string>("");
   const [editData, setEditData] = useState({
     status: "",
     payment_status: "",
     courier_name: "",
     tracking_id: "",
     tracking_url: "",
-    notes: "",
   });
   const router = useRouter();
   const params = useParams();
@@ -152,16 +170,74 @@ export default function OrderDetailPage() {
 
   useEffect(() => {
     if (order) {
+      const courierOption = COURIER_SERVICES.some(
+        (service) => service.name === order.courier_name
+      )
+        ? order.courier_name || ""
+        : "";
+
+      setSelectedCourierOption(courierOption);
       setEditData({
         status: order.status,
         payment_status: order.payment_status,
         courier_name: order.courier_name || "",
         tracking_id: order.tracking_id || "",
         tracking_url: order.tracking_url || "",
-        notes: "",
       });
     }
   }, [order]);
+
+  const handleCourierServiceChange = (serviceName: string) => {
+    const selectedService = COURIER_SERVICES.find(
+      (service) => service.name === serviceName
+    );
+    const trackingUrl = selectedService ? selectedService.trackingUrl : "";
+
+    setSelectedCourierOption(serviceName);
+    setEditData((prev) => ({
+      ...prev,
+      courier_name: serviceName,
+      tracking_url: trackingUrl,
+    }));
+  };
+
+  const handleShipOrder = async () => {
+    if (!order) return;
+
+    // Validate required shipping fields
+    if (!editData.tracking_id.trim() || !editData.courier_name.trim()) {
+      toast.error(
+        "Tracking ID and courier name are required to ship the order"
+      );
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("admin_token");
+      const response = await fetch(`/api/admin/orders/${orderId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          ...editData,
+          is_shipped: true,
+        }),
+      });
+
+      if (response.ok) {
+        toast.success("Order shipped successfully!");
+        setIsEditing(false);
+        fetchOrder();
+      } else {
+        const data = await response.json();
+        toast.error(data.error?.message || "Failed to ship order");
+      }
+    } catch (error) {
+      toast.error("Failed to ship order");
+    }
+  };
 
   const handleUpdateOrder = async () => {
     if (!order) return;
@@ -191,8 +267,8 @@ export default function OrderDetailPage() {
   };
 
   const addStatusUpdate = async () => {
-    if (!editData.status || !editData.notes.trim()) {
-      toast.error("Status and notes are required");
+    if (!editData.status) {
+      toast.error("Status is required");
       return;
     }
 
@@ -206,13 +282,11 @@ export default function OrderDetailPage() {
         },
         body: JSON.stringify({
           status: editData.status,
-          notes: editData.notes,
         }),
       });
 
       if (response.ok) {
         toast.success("Status update added successfully");
-        setEditData((prev) => ({ ...prev, notes: "" }));
         fetchOrder();
       } else {
         const data = await response.json();
@@ -283,6 +357,27 @@ export default function OrderDetailPage() {
     );
   };
 
+  const getShippingStatusBadge = (isShipped?: boolean) => {
+    if (isShipped) {
+      return (
+        <Badge
+          variant="default"
+          className="bg-green-100 text-green-800 border-green-200"
+        >
+          <Truck className="w-3 h-3 mr-1" />
+          Shipped
+        </Badge>
+      );
+    } else {
+      return (
+        <Badge variant="outline" className="border-gray-300 text-gray-600">
+          <Package className="w-3 h-3 mr-1" />
+          Not Shipped
+        </Badge>
+      );
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -336,6 +431,7 @@ export default function OrderDetailPage() {
             <div className="flex items-center space-x-3">
               {getStatusBadge(order.status)}
               {getPaymentStatusBadge(order.payment_status)}
+              {getShippingStatusBadge(order.is_shipped)}
               <Button
                 onClick={() => setIsEditing(!isEditing)}
                 variant="outline"
@@ -475,6 +571,10 @@ export default function OrderDetailPage() {
                           <span className="text-sm">Payment:</span>
                           {getPaymentStatusBadge(order.payment_status)}
                         </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm">Shipping:</span>
+                          {getShippingStatusBadge(order.is_shipped)}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -510,6 +610,7 @@ export default function OrderDetailPage() {
                         {order.shipping_address?.state}{" "}
                         {order.shipping_address?.postal_code}
                       </div>
+                      <div>Phone: {order.shipping_address?.phone}</div>
                       <div>{order.shipping_address?.country}</div>
                     </div>
                   </div>
@@ -521,25 +622,8 @@ export default function OrderDetailPage() {
                     {isEditing ? (
                       <div className="space-y-3">
                         <div>
-                          <Label htmlFor="courier" className="text-xs">
-                            Courier Service
-                          </Label>
-                          <Input
-                            id="courier"
-                            value={editData.courier_name}
-                            onChange={(e) =>
-                              setEditData((prev) => ({
-                                ...prev,
-                                courier_name: e.target.value,
-                              }))
-                            }
-                            placeholder="e.g., BlueDart, FedEx"
-                            className="h-9"
-                          />
-                        </div>
-                        <div>
                           <Label htmlFor="tracking" className="text-xs">
-                            Tracking ID
+                            Tracking ID *
                           </Label>
                           <Input
                             id="tracking"
@@ -550,9 +634,32 @@ export default function OrderDetailPage() {
                                 tracking_id: e.target.value,
                               }))
                             }
-                            placeholder="e.g., BD123456789"
+                            placeholder="e.g., BD123456789, SM123456789"
                             className="h-9"
                           />
+                        </div>
+                        <div>
+                          <Label htmlFor="courier_name" className="text-xs">
+                            Courier Service *
+                          </Label>
+                          <Select
+                            value={selectedCourierOption}
+                            onValueChange={handleCourierServiceChange}
+                          >
+                            <SelectTrigger className="h-9">
+                              <SelectValue placeholder="Select courier service" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {COURIER_SERVICES.map((service) => (
+                                <SelectItem
+                                  key={service.name}
+                                  value={service.name}
+                                >
+                                  {service.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
                         <div>
                           <Label htmlFor="tracking_url" className="text-xs">
@@ -561,15 +668,22 @@ export default function OrderDetailPage() {
                           <Input
                             id="tracking_url"
                             value={editData.tracking_url}
-                            onChange={(e) =>
-                              setEditData((prev) => ({
-                                ...prev,
-                                tracking_url: e.target.value,
-                              }))
-                            }
-                            placeholder="https://tracking.example.com/..."
-                            className="h-9"
+                            disabled
+                            placeholder="Auto-filled based on courier service"
+                            className="h-9 bg-gray-50"
                           />
+                          {editData.tracking_url && (
+                            <p className="text-xs text-gray-500 mt-1">
+                              <a
+                                href={editData.tracking_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline"
+                              >
+                                Test tracking link
+                              </a>
+                            </p>
+                          )}
                         </div>
                       </div>
                     ) : (
@@ -600,13 +714,22 @@ export default function OrderDetailPage() {
                 </div>
 
                 {isEditing && (
-                  <div className="mt-6 pt-6 border-t border-gray-100">
+                  <div className="mt-6 pt-6 border-t border-gray-100 flex gap-3">
                     <Button
                       onClick={handleUpdateOrder}
                       className="bg-emerald-600 hover:bg-emerald-700"
                     >
                       Update Order Information
                     </Button>
+                    {!order?.is_shipped && (
+                      <Button
+                        onClick={handleShipOrder}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        <Truck className="w-4 h-4 mr-2" />
+                        Ship Order
+                      </Button>
+                    )}
                   </div>
                 )}
               </CardContent>
@@ -708,30 +831,12 @@ export default function OrderDetailPage() {
                   {/* Add Status Update Form */}
                   {isEditing && (
                     <div className="p-4 bg-gray-50 rounded-lg space-y-3">
-                      <div>
-                        <Label htmlFor="notes" className="text-sm font-medium">
-                          Add Status Note
-                        </Label>
-                        <Textarea
-                          id="notes"
-                          value={editData.notes}
-                          onChange={(e) =>
-                            setEditData((prev) => ({
-                              ...prev,
-                              notes: e.target.value,
-                            }))
-                          }
-                          placeholder="Add a note about this status change..."
-                          className="mt-1"
-                          rows={2}
-                        />
-                      </div>
                       <Button
                         onClick={addStatusUpdate}
                         size="sm"
                         className="bg-emerald-600 hover:bg-emerald-700"
                       >
-                        Add Status Update
+                        Update Status
                       </Button>
                     </div>
                   )}
@@ -752,9 +857,6 @@ export default function OrderDetailPage() {
                             <div className="flex items-center space-x-2">
                               {getStatusBadge(status.status)}
                             </div>
-                            <p className="text-sm text-gray-600 mt-1">
-                              {status.notes}
-                            </p>
                             <p className="text-xs text-gray-500 mt-1">
                               {new Date(status.changed_at).toLocaleString()}
                             </p>

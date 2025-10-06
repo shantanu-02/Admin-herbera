@@ -48,6 +48,7 @@ interface Order {
   courier_name?: string;
   tracking_id?: string;
   tracking_url?: string;
+  is_shipped?: boolean;
   razorpay_payment_id?: string;
   razorpay_order_id?: string;
   profiles?: {
@@ -82,6 +83,7 @@ export default function OrdersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>("");
+  const [shippedFilter, setShippedFilter] = useState<string>("");
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -89,12 +91,16 @@ export default function OrdersPage() {
     // Check for URL parameters and set initial filters
     const statusParam = searchParams.get("status");
     const paymentStatusParam = searchParams.get("payment_status");
+    const shippedParam = searchParams.get("is_shipped");
 
     if (statusParam) {
       setStatusFilter(statusParam);
     }
     if (paymentStatusParam) {
       setPaymentStatusFilter(paymentStatusParam);
+    }
+    if (shippedParam) {
+      setShippedFilter(shippedParam);
     }
   }, [searchParams]);
 
@@ -111,6 +117,8 @@ export default function OrdersPage() {
         url.searchParams.append("status", statusFilter);
       if (paymentStatusFilter && paymentStatusFilter !== "all")
         url.searchParams.append("payment_status", paymentStatusFilter);
+      if (shippedFilter && shippedFilter !== "all")
+        url.searchParams.append("is_shipped", shippedFilter);
 
       const response = await fetch(url.toString(), {
         headers: { Authorization: `Bearer ${token}` },
@@ -142,7 +150,7 @@ export default function OrdersPage() {
     } finally {
       setLoading(false);
     }
-  }, [statusFilter, paymentStatusFilter, searchQuery, router]);
+  }, [statusFilter, paymentStatusFilter, shippedFilter, searchQuery, router]);
 
   useEffect(() => {
     fetchOrders();
@@ -287,6 +295,17 @@ export default function OrdersPage() {
               <SelectItem value="paid">Paid</SelectItem>
               <SelectItem value="failed">Failed</SelectItem>
               <SelectItem value="refunded">Refunded</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={shippedFilter} onValueChange={setShippedFilter}>
+            <SelectTrigger className="w-full lg:w-32 h-12">
+              <SelectValue placeholder="Shipping" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Orders</SelectItem>
+              <SelectItem value="true">Shipped</SelectItem>
+              <SelectItem value="false">Not Shipped</SelectItem>
             </SelectContent>
           </Select>
         </div>

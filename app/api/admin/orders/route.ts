@@ -9,6 +9,7 @@ async function handler(request: NextRequest) {
     const q = searchParams.get("q") || undefined;
     const status = searchParams.get("status") || undefined;
     const payment_status = searchParams.get("payment_status") || undefined;
+    const is_shipped = searchParams.get("is_shipped") || undefined;
     const limit = parseInt(searchParams.get("limit") || "20");
     const offset = parseInt(searchParams.get("offset") || "0");
 
@@ -16,6 +17,7 @@ async function handler(request: NextRequest) {
       q,
       status,
       payment_status,
+      is_shipped,
       limit,
       offset,
     });
@@ -35,6 +37,7 @@ async function handler(request: NextRequest) {
       courier_name: order.courier_name,
       tracking_id: order.tracking_id,
       tracking_url: order.tracking_url,
+      is_shipped: order.is_shipped,
       placed_at: order.placed_at,
       updated_at: order.updated_at,
       customer: {

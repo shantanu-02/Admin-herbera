@@ -306,6 +306,7 @@ export async function getOrders(params: {
   q?: string;
   status?: string;
   payment_status?: string;
+  is_shipped?: string;
   limit?: number;
   offset?: number;
 }) {
@@ -328,6 +329,10 @@ export async function getOrders(params: {
 
     if (params.payment_status) {
       query = query.eq("payment_status", params.payment_status);
+    }
+
+    if (params.is_shipped !== undefined) {
+      query = query.eq("is_shipped", params.is_shipped === "true");
     }
 
     if (params.limit) {
