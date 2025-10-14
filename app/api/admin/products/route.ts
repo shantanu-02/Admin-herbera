@@ -32,6 +32,8 @@ async function handleGET(request: NextRequest) {
       ingredients: Array.isArray(product.ingredients)
         ? product.ingredients
         : [],
+      how_to_use: Array.isArray(product.how_to_use) ? product.how_to_use : [],
+      benefits: Array.isArray(product.benefits) ? product.benefits : [],
       weight_kg: product.weight_kg || 0,
       length_cm: product.length_cm || 0,
       breadth_cm: product.breadth_cm || 0,
@@ -105,6 +107,8 @@ async function handlePOST(request: NextRequest) {
       breadth_cm: data.breadth_cm || null,
       height_cm: data.height_cm || null,
       discount_percent: parseFloat(data.discount_percent) || 0,
+      how_to_use: Array.isArray(data.how_to_use) ? data.how_to_use : [],
+      benefits: Array.isArray(data.benefits) ? data.benefits : [],
       is_active: data.is_active !== false,
       created_by: user.id,
       updated_by: user.id,

@@ -36,6 +36,8 @@ interface Product {
   is_active: boolean;
   sku: string;
   ingredients: string[];
+  how_to_use: string[];
+  benefits: string[];
   weight_kg: number;
   length_cm: number;
   breadth_cm: number;
@@ -64,6 +66,8 @@ export default function EditProductPage() {
     stock: "",
     sku: "",
     ingredients: [] as string[],
+    how_to_use: [] as string[],
+    benefits: [] as string[],
     weight_kg: "",
     length_cm: "",
     breadth_cm: "",
@@ -74,6 +78,8 @@ export default function EditProductPage() {
 
   const [images, setImages] = useState<ProductImage[]>([]);
   const [newIngredient, setNewIngredient] = useState("");
+  const [newHowToUse, setNewHowToUse] = useState("");
+  const [newBenefit, setNewBenefit] = useState("");
 
   const fetchProduct = useCallback(async () => {
     try {
@@ -103,6 +109,8 @@ export default function EditProductPage() {
           stock: productData.stock?.toString() || "",
           sku: productData.sku || "",
           ingredients: productData.ingredients || [],
+          how_to_use: productData.how_to_use || [],
+          benefits: productData.benefits || [],
           weight_kg: productData.weight_kg?.toString() || "",
           length_cm: productData.length_cm?.toString() || "",
           breadth_cm: productData.breadth_cm?.toString() || "",
@@ -179,6 +187,40 @@ export default function EditProductPage() {
     setFormData((prev) => ({
       ...prev,
       ingredients: prev.ingredients.filter((_, i) => i !== index),
+    }));
+  };
+
+  const addHowToUse = () => {
+    if (newHowToUse.trim()) {
+      setFormData((prev) => ({
+        ...prev,
+        how_to_use: [...prev.how_to_use, newHowToUse.trim()],
+      }));
+      setNewHowToUse("");
+    }
+  };
+
+  const removeHowToUse = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      how_to_use: prev.how_to_use.filter((_, i) => i !== index),
+    }));
+  };
+
+  const addBenefit = () => {
+    if (newBenefit.trim()) {
+      setFormData((prev) => ({
+        ...prev,
+        benefits: [...prev.benefits, newBenefit.trim()],
+      }));
+      setNewBenefit("");
+    }
+  };
+
+  const removeBenefit = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      benefits: prev.benefits.filter((_, i) => i !== index),
     }));
   };
 
@@ -597,6 +639,88 @@ export default function EditProductPage() {
                       className="text-red-500 hover:text-red-700"
                     >
                       <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* How to Use */}
+        <Card>
+          <CardHeader>
+            <CardTitle>How to Use</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <Input
+                  value={newHowToUse}
+                  onChange={(e) => setNewHowToUse(e.target.value)}
+                  placeholder="Enter usage instruction"
+                  onKeyPress={(e) =>
+                    e.key === "Enter" && (e.preventDefault(), addHowToUse())
+                  }
+                />
+                <Button type="button" onClick={addHowToUse}>
+                  Add
+                </Button>
+              </div>
+              <div className="space-y-2">
+                {formData.how_to_use.map((instruction, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center gap-2 bg-blue-50 px-3 py-2 rounded-md border border-blue-200"
+                  >
+                    <span className="text-sm flex-1">{instruction}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeHowToUse(index)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Benefits */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Benefits</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <Input
+                  value={newBenefit}
+                  onChange={(e) => setNewBenefit(e.target.value)}
+                  placeholder="Enter benefit"
+                  onKeyPress={(e) =>
+                    e.key === "Enter" && (e.preventDefault(), addBenefit())
+                  }
+                />
+                <Button type="button" onClick={addBenefit}>
+                  Add
+                </Button>
+              </div>
+              <div className="space-y-2">
+                {formData.benefits.map((benefit, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center gap-2 bg-green-50 px-3 py-2 rounded-md border border-green-200"
+                  >
+                    <span className="text-sm flex-1">{benefit}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeBenefit(index)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <X className="h-4 w-4" />
                     </button>
                   </div>
                 ))}

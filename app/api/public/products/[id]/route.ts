@@ -21,6 +21,18 @@ const products = [
     is_active: true,
     sku: "VCS-30ML-001",
     ingredients: ["Vitamin C", "Hyaluronic Acid", "Niacinamide", "Aloe Vera"],
+    how_to_use: [
+      "Apply 2-3 drops to clean, dry skin in the morning and evening.",
+      "Gently massage into face and neck using upward motions.",
+      "Follow with moisturizer and sunscreen during the day.",
+      "Use consistently for 4-6 weeks to see optimal results.",
+    ],
+    benefits: [
+      "Brightens and evens skin tone with vitamin C.",
+      "Reduces the appearance of fine lines and wrinkles.",
+      "Provides antioxidant protection against environmental damage.",
+      "Hydrates skin with hyaluronic acid for plump, glowing complexion.",
+    ],
     created_at: "2024-01-15T10:30:00Z",
     updated_at: "2024-01-20T14:45:00Z",
     images: [
@@ -68,6 +80,18 @@ const products = [
     is_active: true,
     sku: "NHO-100ML-001",
     ingredients: ["Coconut Oil", "Argan Oil", "Rosemary Extract", "Vitamin E"],
+    how_to_use: [
+      "Apply 3-5 drops to damp or dry hair, focusing on the ends.",
+      "Massage gently into scalp and distribute evenly through hair.",
+      "Leave on for at least 30 minutes or overnight for deep conditioning.",
+      "Wash out thoroughly with shampoo and conditioner.",
+    ],
+    benefits: [
+      "Nourishes hair follicles and promotes healthy growth.",
+      "Adds natural shine and reduces frizz.",
+      "Strengthens hair strands and prevents breakage.",
+      "Provides deep hydration with organic oils.",
+    ],
     created_at: "2024-01-10T08:15:00Z",
     updated_at: "2024-01-18T16:20:00Z",
     images: [
@@ -107,6 +131,18 @@ const products = [
     is_active: true,
     sku: "GFC-150ML-001",
     ingredients: ["Glycerin", "Aloe Vera", "Chamomile Extract", "Green Tea"],
+    how_to_use: [
+      "Wet face with lukewarm water.",
+      "Apply a small amount to palms and massage gently in circular motions.",
+      "Rinse thoroughly with clean water.",
+      "Pat dry with a soft towel and follow with toner.",
+    ],
+    benefits: [
+      "Gently removes dirt and impurities without drying skin.",
+      "Maintains skin's natural moisture barrier.",
+      "Suitable for all skin types including sensitive skin.",
+      "Soothes and calms skin with natural extracts.",
+    ],
     created_at: "2024-01-05T12:00:00Z",
     updated_at: "2024-01-15T09:30:00Z",
     images: [
@@ -267,6 +303,8 @@ export async function GET(
       ingredients: Array.isArray(product.ingredients)
         ? product.ingredients
         : [],
+      how_to_use: product.how_to_use || [],
+      benefits: product.benefits || [],
       images: product.images,
       variants: (product.variants || []).filter(
         (variant: any) => variant.is_active

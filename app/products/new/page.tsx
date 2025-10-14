@@ -49,9 +49,13 @@ export default function NewProductPage() {
     height_cm: "",
     discount_percent: "",
     ingredients: [] as string[],
+    how_to_use: [] as string[],
+    benefits: [] as string[],
     is_active: true,
   });
   const [ingredientInput, setIngredientInput] = useState("");
+  const [howToUseInput, setHowToUseInput] = useState("");
+  const [benefitInput, setBenefitInput] = useState("");
   const [images, setImages] = useState<ProductImage[]>([]);
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const router = useRouter();
@@ -113,6 +117,40 @@ export default function NewProductPage() {
     setFormData((prev) => ({
       ...prev,
       ingredients: prev.ingredients.filter((_, i) => i !== index),
+    }));
+  };
+
+  const addHowToUse = () => {
+    if (howToUseInput.trim()) {
+      setFormData((prev) => ({
+        ...prev,
+        how_to_use: [...prev.how_to_use, howToUseInput.trim()],
+      }));
+      setHowToUseInput("");
+    }
+  };
+
+  const removeHowToUse = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      how_to_use: prev.how_to_use.filter((_, i) => i !== index),
+    }));
+  };
+
+  const addBenefit = () => {
+    if (benefitInput.trim()) {
+      setFormData((prev) => ({
+        ...prev,
+        benefits: [...prev.benefits, benefitInput.trim()],
+      }));
+      setBenefitInput("");
+    }
+  };
+
+  const removeBenefit = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      benefits: prev.benefits.filter((_, i) => i !== index),
     }));
   };
 
@@ -555,6 +593,112 @@ export default function NewProductPage() {
                               className="text-gray-500 hover:text-red-500"
                             >
                               <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* How to Use */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>How to Use</CardTitle>
+                  <CardDescription>
+                    Instructions for using this product
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex gap-2">
+                      <Input
+                        value={howToUseInput}
+                        onChange={(e) => setHowToUseInput(e.target.value)}
+                        placeholder="Enter usage instruction"
+                        onKeyPress={(e) =>
+                          e.key === "Enter" &&
+                          (e.preventDefault(), addHowToUse())
+                        }
+                      />
+                      <Button
+                        type="button"
+                        onClick={addHowToUse}
+                        variant="outline"
+                      >
+                        Add
+                      </Button>
+                    </div>
+
+                    {formData.how_to_use.length > 0 && (
+                      <div className="space-y-2">
+                        {formData.how_to_use.map((instruction, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center gap-2 bg-blue-50 px-3 py-2 rounded-md border border-blue-200"
+                          >
+                            <span className="text-sm flex-1">
+                              {instruction}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => removeHowToUse(index)}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Benefits */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Benefits</CardTitle>
+                  <CardDescription>
+                    Key benefits and advantages of this product
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex gap-2">
+                      <Input
+                        value={benefitInput}
+                        onChange={(e) => setBenefitInput(e.target.value)}
+                        placeholder="Enter benefit"
+                        onKeyPress={(e) =>
+                          e.key === "Enter" &&
+                          (e.preventDefault(), addBenefit())
+                        }
+                      />
+                      <Button
+                        type="button"
+                        onClick={addBenefit}
+                        variant="outline"
+                      >
+                        Add
+                      </Button>
+                    </div>
+
+                    {formData.benefits.length > 0 && (
+                      <div className="space-y-2">
+                        {formData.benefits.map((benefit, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center gap-2 bg-green-50 px-3 py-2 rounded-md border border-green-200"
+                          >
+                            <span className="text-sm flex-1">{benefit}</span>
+                            <button
+                              type="button"
+                              onClick={() => removeBenefit(index)}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <X className="w-4 h-4" />
                             </button>
                           </div>
                         ))}
