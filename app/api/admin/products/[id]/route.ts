@@ -72,10 +72,19 @@ async function handlePATCH(
       updated_by: user.id,
     };
 
+    // Ensure array fields are properly formatted
+    if (updateData.how_to_use !== undefined) {
+      updateData.how_to_use = Array.isArray(updateData.how_to_use) ? updateData.how_to_use : [];
+    }
+    if (updateData.benefits !== undefined) {
+      updateData.benefits = Array.isArray(updateData.benefits) ? updateData.benefits : [];
+    }
+
     // Remove fields that shouldn't be updated directly
     delete updateData.id;
     delete updateData.created_at;
     delete updateData.created_by;
+    delete updateData.images; // Images are handled separately via product_images table
 
     const updatedProduct = await updateRecord("products", id, updateData);
 
