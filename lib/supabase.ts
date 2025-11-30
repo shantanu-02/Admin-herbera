@@ -142,6 +142,8 @@ export interface Database {
           breadth_cm: number | null;
           height_cm: number | null;
           discount_percent: number;
+          skin_concerns: string[];
+          skin_types: string[];
         };
         Insert: {
           id?: string;
@@ -164,6 +166,8 @@ export interface Database {
           breadth_cm?: number | null;
           height_cm?: number | null;
           discount_percent?: number;
+          skin_concerns?: string[];
+          skin_types?: string[];
         };
         Update: {
           id?: string;
@@ -186,6 +190,8 @@ export interface Database {
           breadth_cm?: number | null;
           height_cm?: number | null;
           discount_percent?: number;
+          skin_concerns?: string[];
+          skin_types?: string[];
         };
       };
       product_images: {

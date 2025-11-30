@@ -73,6 +73,8 @@ export default function EditProductPage() {
     breadth_cm: "",
     height_cm: "",
     discount_percent: "",
+    skin_concerns: [] as string[],
+    skin_types: [] as string[],
     is_active: true,
   });
 
@@ -80,6 +82,25 @@ export default function EditProductPage() {
   const [newIngredient, setNewIngredient] = useState("");
   const [newHowToUse, setNewHowToUse] = useState("");
   const [newBenefit, setNewBenefit] = useState("");
+
+  const SKIN_CONCERNS = [
+    "Dandruff",
+    "Uneven Skintone",
+    "Tan",
+    "Dry Skin",
+    "Pimple",
+    "Acne",
+    "Pigmentation",
+    "Open Pores",
+  ];
+
+  const SKIN_TYPES = [
+    "Oily",
+    "Dry",
+    "Combination",
+    "Sensitive",
+    "Normal",
+  ];
 
   const fetchProduct = useCallback(async () => {
     try {
@@ -116,6 +137,8 @@ export default function EditProductPage() {
           breadth_cm: productData.breadth_cm?.toString() || "",
           height_cm: productData.height_cm?.toString() || "",
           discount_percent: productData.discount_percent?.toString() || "0",
+          skin_concerns: productData.skin_concerns || [],
+          skin_types: productData.skin_types || [],
           is_active: productData.is_active ?? true,
         });
 
@@ -171,6 +194,26 @@ export default function EditProductPage() {
       ...prev,
       [field]: value,
     }));
+  };
+
+  const toggleSkinConcern = (concern: string) => {
+    setFormData((prev) => {
+      const current = prev.skin_concerns;
+      const updated = current.includes(concern)
+        ? current.filter((c) => c !== concern)
+        : [...current, concern];
+      return { ...prev, skin_concerns: updated };
+    });
+  };
+
+  const toggleSkinType = (type: string) => {
+    setFormData((prev) => {
+      const current = prev.skin_types;
+      const updated = current.includes(type)
+        ? current.filter((t) => t !== type)
+        : [...current, type];
+      return { ...prev, skin_types: updated };
+    });
   };
 
   const addIngredient = () => {
@@ -336,6 +379,8 @@ export default function EditProductPage() {
           height_cm: formData.height_cm ? parseFloat(formData.height_cm) : null,
           discount_percent: parseFloat(formData.discount_percent),
           slug: formData.slug || null, // Allow null to trigger auto-generation
+          skin_concerns: formData.skin_concerns,
+          skin_types: formData.skin_types,
           images: uploadedImages,
         }),
       });
@@ -542,6 +587,54 @@ export default function EditProductPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Skin Concerns & Types */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Skin Attributes</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div>
+              <Label className="mb-2 block">Skin Concerns</Label>
+              <div className="flex flex-wrap gap-2">
+                {SKIN_CONCERNS.map((concern) => (
+                  <button
+                    key={concern}
+                    type="button"
+                    onClick={() => toggleSkinConcern(concern)}
+                    className={`px-3 py-1 rounded-full text-sm border transition-colors ${
+                      formData.skin_concerns.includes(concern)
+                        ? "bg-emerald-100 border-emerald-500 text-emerald-800"
+                        : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    {concern}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <Label className="mb-2 block">Skin Types</Label>
+              <div className="flex flex-wrap gap-2">
+                {SKIN_TYPES.map((type) => (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => toggleSkinType(type)}
+                    className={`px-3 py-1 rounded-full text-sm border transition-colors ${
+                      formData.skin_types.includes(type)
+                        ? "bg-blue-100 border-blue-500 text-blue-800"
+                        : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Dimensions */}
         <Card>

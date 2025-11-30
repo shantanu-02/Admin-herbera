@@ -51,6 +51,8 @@ export default function NewProductPage() {
     ingredients: [] as string[],
     how_to_use: [] as string[],
     benefits: [] as string[],
+    skin_concerns: [] as string[],
+    skin_types: [] as string[],
     is_active: true,
   });
   const [ingredientInput, setIngredientInput] = useState("");
@@ -59,6 +61,25 @@ export default function NewProductPage() {
   const [images, setImages] = useState<ProductImage[]>([]);
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const router = useRouter();
+
+  const SKIN_CONCERNS = [
+    "Dandruff",
+    "Uneven Skintone",
+    "Tan",
+    "Dry Skin",
+    "Pimple",
+    "Acne",
+    "Pigmentation",
+    "Open Pores",
+  ];
+
+  const SKIN_TYPES = [
+    "Oily",
+    "Dry",
+    "Combination",
+    "Sensitive",
+    "Normal",
+  ];
 
   const fetchCategories = useCallback(async () => {
     try {
@@ -101,6 +122,26 @@ export default function NewProductPage() {
       ...prev,
       [field]: value,
     }));
+  };
+
+  const toggleSkinConcern = (concern: string) => {
+    setFormData((prev) => {
+      const current = prev.skin_concerns;
+      const updated = current.includes(concern)
+        ? current.filter((c) => c !== concern)
+        : [...current, concern];
+      return { ...prev, skin_concerns: updated };
+    });
+  };
+
+  const toggleSkinType = (type: string) => {
+    setFormData((prev) => {
+      const current = prev.skin_types;
+      const updated = current.includes(type)
+        ? current.filter((t) => t !== type)
+        : [...current, type];
+      return { ...prev, skin_types: updated };
+    });
   };
 
   const addIngredient = () => {
@@ -473,6 +514,57 @@ export default function NewProductPage() {
                       }
                       placeholder="0"
                     />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Skin Concerns & Types */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Skin Attributes</CardTitle>
+                  <CardDescription>
+                    Select relevant skin concerns and types for this product
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div>
+                    <Label className="mb-2 block">Skin Concerns</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {SKIN_CONCERNS.map((concern) => (
+                        <button
+                          key={concern}
+                          type="button"
+                          onClick={() => toggleSkinConcern(concern)}
+                          className={`px-3 py-1 rounded-full text-sm border transition-colors ${
+                            formData.skin_concerns.includes(concern)
+                              ? "bg-emerald-100 border-emerald-500 text-emerald-800"
+                              : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                          }`}
+                        >
+                          {concern}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label className="mb-2 block">Skin Types</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {SKIN_TYPES.map((type) => (
+                        <button
+                          key={type}
+                          type="button"
+                          onClick={() => toggleSkinType(type)}
+                          className={`px-3 py-1 rounded-full text-sm border transition-colors ${
+                            formData.skin_types.includes(type)
+                              ? "bg-blue-100 border-blue-500 text-blue-800"
+                              : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                          }`}
+                        >
+                          {type}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </CardContent>
               </Card>

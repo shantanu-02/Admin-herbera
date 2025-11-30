@@ -109,6 +109,8 @@ async function handlePOST(request: NextRequest) {
       discount_percent: parseFloat(data.discount_percent) || 0,
       how_to_use: Array.isArray(data.how_to_use) ? data.how_to_use : [],
       benefits: Array.isArray(data.benefits) ? data.benefits : [],
+      skin_concerns: Array.isArray(data.skin_concerns) ? data.skin_concerns : [],
+      skin_types: Array.isArray(data.skin_types) ? data.skin_types : [],
       is_active: data.is_active !== false,
       created_by: user.id,
       updated_by: user.id,
