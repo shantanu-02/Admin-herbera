@@ -42,6 +42,35 @@ export default function HomePage() {
   useEffect(() => {
     const token = localStorage.getItem("admin_token");
     if (token) {
+      // Check if token is expired
+      try {
+        const base64Url = token.split(".")[1];
+        if (base64Url) {
+          const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+          const jsonPayload = decodeURIComponent(
+            atob(base64)
+              .split("")
+              .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+              .join("")
+          );
+          const decoded = JSON.parse(jsonPayload);
+          const currentTime = Math.floor(Date.now() / 1000);
+          
+          if (decoded.exp && decoded.exp < currentTime) {
+            // Token expired
+            localStorage.removeItem("admin_token");
+            setIsAuthenticated(false);
+            toast.error("Session expired. Please login again.");
+            return;
+          }
+        }
+      } catch (error) {
+        // If we can't decode the token, treat it as invalid
+        localStorage.removeItem("admin_token");
+        setIsAuthenticated(false);
+        return;
+      }
+      
       setIsAuthenticated(true);
       fetchDashboardStats();
     }

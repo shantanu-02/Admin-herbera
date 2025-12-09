@@ -49,6 +49,25 @@ export function verifyToken(token: string): AdminUser | null {
   }
 }
 
+/**
+ * Check if a JWT token is expired (client-side utility)
+ * This decodes the token without verification to check expiration
+ */
+export function isTokenExpired(token: string): boolean {
+  try {
+    // Decode without verification (client-side)
+    const decoded = jwt.decode(token) as any;
+    if (!decoded || !decoded.exp) {
+      return true;
+    }
+    // Check if expiration time (in seconds) is less than current time
+    const currentTime = Math.floor(Date.now() / 1000);
+    return decoded.exp < currentTime;
+  } catch (error) {
+    return true;
+  }
+}
+
 export async function authenticateAdmin(
   email: string,
   password: string
