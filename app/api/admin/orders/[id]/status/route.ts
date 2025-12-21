@@ -1,70 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createAuthenticatedHandler } from "@/lib/api-auth";
+import { getOrderById, createRecord, updateRecord } from "@/lib/database";
 
-// Mock orders data for status updates (simplified version)
-const orders = [
-  {
-    id: "1",
-    order_number: "ORD20240101001",
-    status_history: [
-      {
-        id: "status1",
-        status: "pending",
-        notes: "Order created and awaiting payment",
-        changed_at: "2024-01-01T10:00:00Z",
-      },
-      {
-        id: "status2",
-        status: "paid",
-        notes: "Payment received successfully via UPI",
-        changed_at: "2024-01-01T10:30:00Z",
-      },
-      {
-        id: "status3",
-        status: "shipped",
-        notes: "Order shipped via BlueDart with tracking ID: BD123456789",
-        changed_at: "2024-01-01T12:00:00Z",
-      },
-    ],
-  },
-  {
-    id: "2",
-    order_number: "ORD20240102002",
-    status_history: [
-      {
-        id: "status4",
-        status: "pending",
-        notes: "Order created and awaiting payment confirmation",
-        changed_at: "2024-01-02T15:00:00Z",
-      },
-    ],
-  },
-];
-
-function verifyAdmin(request: NextRequest): boolean {
-  const auth = request.headers.get("authorization");
-  return auth?.startsWith("Bearer admin_token_") || false;
-}
-
-export async function POST(
+async function handlePOST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    if (!verifyAdmin(request)) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: "UNAUTHORIZED",
-            message: "Authentication required",
-          },
-        },
-        { status: 401 }
-      );
-    }
-
     const { id } = params;
     const { status, notes } = await request.json();
+    const user = (request as any).user;
 
     // Validate input
     if (!status) {
@@ -102,8 +47,9 @@ export async function POST(
       );
     }
 
-    const orderIndex = orders.findIndex((o) => o.id === id);
-    if (orderIndex === -1) {
+    // Check if order exists
+    const order = await getOrderById(id);
+    if (!order) {
       return NextResponse.json(
         {
           success: false,
@@ -116,23 +62,27 @@ export async function POST(
       );
     }
 
-    // Create new status entry
-    const newStatusEntry = {
-      id: `status_${Date.now()}`,
+    // Update order status
+    await updateRecord("orders", id, {
+      status,
+      updated_by: user.id,
+      updated_at: new Date().toISOString(),
+    });
+
+    // Create status history entry
+    const newStatusEntry = await createRecord("order_status_history", {
       order_id: id,
       status,
       notes: notes || `Order status updated to ${status}`,
       changed_at: new Date().toISOString(),
-    };
-
-    // Add to order's status history
-    orders[orderIndex].status_history.push(newStatusEntry);
+    });
 
     return NextResponse.json({
       success: true,
       data: newStatusEntry,
     });
   } catch (error) {
+    console.error("Order status update error:", error);
     return NextResponse.json(
       {
         success: false,
@@ -145,3 +95,5 @@ export async function POST(
     );
   }
 }
+
+export const POST = createAuthenticatedHandler(handlePOST);
