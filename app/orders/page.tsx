@@ -49,6 +49,7 @@ interface Order {
   tracking_id?: string;
   tracking_url?: string;
   is_shipped?: boolean;
+  is_delivered?: boolean;
   razorpay_payment_id?: string;
   razorpay_order_id?: string;
   profiles?: {
@@ -84,6 +85,7 @@ export default function OrdersPage() {
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>("");
   const [shippedFilter, setShippedFilter] = useState<string>("");
+  const [deliveredFilter, setDeliveredFilter] = useState<string>("");
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -92,6 +94,7 @@ export default function OrdersPage() {
     const statusParam = searchParams.get("status");
     const paymentStatusParam = searchParams.get("payment_status");
     const shippedParam = searchParams.get("is_shipped");
+    const deliveredParam = searchParams.get("is_delivered");
 
     if (statusParam) {
       setStatusFilter(statusParam);
@@ -101,6 +104,9 @@ export default function OrdersPage() {
     }
     if (shippedParam) {
       setShippedFilter(shippedParam);
+    }
+    if (deliveredParam) {
+      setDeliveredFilter(deliveredParam);
     }
   }, [searchParams]);
 
@@ -119,6 +125,8 @@ export default function OrdersPage() {
         url.searchParams.append("payment_status", paymentStatusFilter);
       if (shippedFilter && shippedFilter !== "all")
         url.searchParams.append("is_shipped", shippedFilter);
+      if (deliveredFilter && deliveredFilter !== "all")
+        url.searchParams.append("is_delivered", deliveredFilter);
 
       const response = await fetch(url.toString(), {
         headers: { Authorization: `Bearer ${token}` },
@@ -150,7 +158,7 @@ export default function OrdersPage() {
     } finally {
       setLoading(false);
     }
-  }, [statusFilter, paymentStatusFilter, shippedFilter, searchQuery, router]);
+  }, [statusFilter, paymentStatusFilter, shippedFilter, deliveredFilter, searchQuery, router]);
 
   useEffect(() => {
     fetchOrders();
@@ -306,6 +314,17 @@ export default function OrdersPage() {
               <SelectItem value="all">All Orders</SelectItem>
               <SelectItem value="true">Shipped</SelectItem>
               <SelectItem value="false">Not Shipped</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={deliveredFilter} onValueChange={setDeliveredFilter}>
+            <SelectTrigger className="w-full lg:w-32 h-12">
+              <SelectValue placeholder="Delivery" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Orders</SelectItem>
+              <SelectItem value="true">Delivered</SelectItem>
+              <SelectItem value="false">Not Delivered</SelectItem>
             </SelectContent>
           </Select>
         </div>

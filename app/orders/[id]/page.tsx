@@ -35,6 +35,16 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter, useParams } from "next/navigation";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 // Courier services configuration
 const COURIER_SERVICES = [
@@ -104,6 +114,7 @@ interface Order {
   tracking_id?: string;
   tracking_url?: string;
   is_shipped?: boolean;
+  is_delivered?: boolean;
   placed_at: string;
   updated_at: string;
   created_by?: string;
@@ -133,6 +144,7 @@ export default function OrderDetailPage() {
     tracking_id: "",
     tracking_url: "",
   });
+  const [showDeliveredDialog, setShowDeliveredDialog] = useState(false);
   const router = useRouter();
   const params = useParams();
   const orderId = params.id as string;
@@ -378,6 +390,57 @@ export default function OrderDetailPage() {
     }
   };
 
+  const getDeliveryStatusBadge = (isDelivered?: boolean) => {
+    if (isDelivered) {
+      return (
+        <Badge
+          variant="default"
+          className="bg-emerald-100 text-emerald-800 border-emerald-200"
+        >
+          <CheckCircle className="w-3 h-3 mr-1" />
+          Delivered
+        </Badge>
+      );
+    } else {
+      return (
+        <Badge variant="outline" className="border-gray-300 text-gray-600">
+          <Clock className="w-3 h-3 mr-1" />
+          Not Delivered
+        </Badge>
+      );
+    }
+  };
+
+  const handleMarkAsDelivered = async () => {
+    if (!order) return;
+
+    try {
+      const token = localStorage.getItem("admin_token");
+      const response = await fetch(`/api/admin/orders/${orderId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          is_delivered: true,
+          status: "delivered",
+        }),
+      });
+
+      if (response.ok) {
+        toast.success("Order marked as delivered successfully!");
+        setShowDeliveredDialog(false);
+        fetchOrder();
+      } else {
+        const data = await response.json();
+        toast.error(data.error?.message || "Failed to mark order as delivered");
+      }
+    } catch (error) {
+      toast.error("Failed to mark order as delivered");
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -432,6 +495,7 @@ export default function OrderDetailPage() {
               {getStatusBadge(order.status)}
               {getPaymentStatusBadge(order.payment_status)}
               {getShippingStatusBadge(order.is_shipped)}
+              {getDeliveryStatusBadge(order.is_delivered)}
               <Button
                 onClick={() => setIsEditing(!isEditing)}
                 variant="outline"
@@ -729,6 +793,62 @@ export default function OrderDetailPage() {
                         <Truck className="w-4 h-4 mr-2" />
                         Ship Order
                       </Button>
+                    )}
+                    {order?.is_shipped && !order?.is_delivered && (
+                      <>
+                        <Button
+                          onClick={() => setShowDeliveredDialog(true)}
+                          className="bg-emerald-600 hover:bg-emerald-700"
+                        >
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Mark as Delivered
+                        </Button>
+                        <AlertDialog
+                          open={showDeliveredDialog}
+                          onOpenChange={setShowDeliveredDialog}
+                        >
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Confirm Order Delivery
+                              </AlertDialogTitle>
+                              <AlertDialogDescription asChild>
+                                <div>
+                                  <p className="mb-3">
+                                    Are you sure you want to mark order{" "}
+                                    <strong>#{order.order_number}</strong> as
+                                    delivered?
+                                  </p>
+                                  <p className="mb-2">This action will:</p>
+                                  <ul className="list-disc list-inside mb-3 space-y-1 text-sm">
+                                    <li>Update the order status to &quot;delivered&quot;</li>
+                                    <li>
+                                      Send a delivery confirmation email to the
+                                      customer
+                                    </li>
+                                    <li>
+                                      Mark the order as delivered in the system
+                                    </li>
+                                  </ul>
+                                  <p className="text-sm font-medium">
+                                    This action cannot be undone.
+                                  </p>
+                                </div>
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={handleMarkAsDelivered}
+                                className="bg-emerald-600 hover:bg-emerald-700"
+                              >
+                                <CheckCircle className="w-4 h-4 mr-2" />
+                                Confirm Delivery
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </>
                     )}
                   </div>
                 )}
